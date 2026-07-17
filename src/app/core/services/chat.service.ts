@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Conversation {
   id: string;
@@ -59,8 +60,7 @@ export class ChatService {
       return;
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const wsUrl = environment.wsUrl;
     console.log('Connecting to WebSocket at:', wsUrl);
 
     this.ws = new WebSocket(wsUrl);
