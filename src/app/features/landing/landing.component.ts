@@ -1221,6 +1221,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     },
   ];
 
+  private realTimeTimer: any = null;
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.generateParticles();
@@ -1235,6 +1237,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.observer?.disconnect();
+    if (this.realTimeTimer) {
+      clearInterval(this.realTimeTimer);
+    }
   }
 
   generateParticles(): void {
@@ -1255,7 +1260,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           this.animateStats();
         }
       });
-    }, { threshold: 0.4 });
+    }, { threshold: 0.05 });
 
     if (this.statsSection?.nativeElement) {
       this.observer.observe(this.statsSection.nativeElement);
@@ -1266,6 +1271,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     const duration = 1800;
     const steps    = 60;
     const interval = duration / steps;
+    let completedCount = 0;
 
     this.stats.forEach((stat, i) => {
       let current = 0;
@@ -1277,8 +1283,36 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           ...stat,
           display: i < 3 ? val + '+' : val + ' days',
         };
-        if (current >= stat.target) clearInterval(timer);
+        // Copy array reference to force Angular CD rendering
+        this.stats = [...this.stats];
+
+        if (current >= stat.target) {
+          clearInterval(timer);
+          completedCount++;
+          if (completedCount === this.stats.length) {
+            this.startRealTimeStatsUpdates();
+          }
+        }
       }, interval);
     });
+  }
+
+  startRealTimeStatsUpdates(): void {
+    // Increment stats every 7-10 seconds to simulate real-time growth
+    this.realTimeTimer = setInterval(() => {
+      this.stats = this.stats.map((stat, i) => {
+        if (i === 3) return stat; // Do not increment days to move
+        
+        // Randomly increment by 1 or 2
+        const increment = Math.floor(Math.random() * 2) + 1;
+        const newTarget = stat.target + increment;
+        
+        return {
+          ...stat,
+          target: newTarget,
+          display: newTarget + '+'
+        };
+      });
+    }, 8500);
   }
 }

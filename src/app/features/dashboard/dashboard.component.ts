@@ -173,49 +173,15 @@ import { AlertsService } from '../../core/services/alerts.service';
                   <input type="text" id="address" name="address" [(ngModel)]="listingModel.addressText" required placeholder="A-45 Sector 62, Noida" />
                 </div>
 
-                <!-- Interactive Noida Map Selector -->
+                <!-- Interactive Leaflet Map Selector -->
                 <div class="form-group full-width">
                   <label>Pin Your Location on Noida Map</label>
-                  <p class="map-hint">Click or tap on the map to drop a pin at your property's location. Coordinates update automatically.</p>
-                  <div class="form-map" (click)="onMapClick($event)" #mapEl>
-                    <!-- Subtle grid overlay -->
-                    <div class="map-grid-lines">
-                      <div class="mg-h" style="top:25%"></div>
-                      <div class="mg-h" style="top:50%"></div>
-                      <div class="mg-h" style="top:75%"></div>
-                      <div class="mg-v" style="left:25%"></div>
-                      <div class="mg-v" style="left:50%"></div>
-                      <div class="mg-v" style="left:75%"></div>
-                    </div>
-                    <!-- Sector Labels -->
-                    <span class="sector-label" style="top:12%;left:18%">Sec 18</span>
-                    <span class="sector-label" style="top:22%;left:55%">Sec 62</span>
-                    <span class="sector-label" style="top:42%;left:35%">Sec 50</span>
-                    <span class="sector-label" style="top:55%;left:65%">Sec 137</span>
-                    <span class="sector-label" style="top:70%;left:22%">Sec 110</span>
-                    <span class="sector-label" style="top:78%;left:58%">Sec 152</span>
-                    <!-- Road lines -->
-                    <svg class="map-roads" viewBox="0 0 400 260" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <line x1="0" y1="130" x2="400" y2="130" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
-                      <line x1="200" y1="0" x2="200" y2="260" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
-                      <line x1="0" y1="65" x2="400" y2="65" stroke="currentColor" stroke-width="1" opacity="0.15"/>
-                      <line x1="0" y1="195" x2="400" y2="195" stroke="currentColor" stroke-width="1" opacity="0.15"/>
-                      <line x1="100" y1="0" x2="100" y2="260" stroke="currentColor" stroke-width="1" opacity="0.15"/>
-                      <line x1="300" y1="0" x2="300" y2="260" stroke="currentColor" stroke-width="1" opacity="0.15"/>
-                      <text x="188" y="124" font-size="9" fill="currentColor" opacity="0.4">Noida Centre</text>
-                    </svg>
-                    <!-- Draggable Pin -->
-                    <div class="map-pin"
-                         [style.top.%]="getMapTop(listingModel.latitude)"
-                         [style.left.%]="getMapLeft(listingModel.longitude)">
-                      <div class="pin-ring"></div>
-                      <div class="pin-dot"></div>
-                    </div>
-                  </div>
+                  <p class="map-hint">Drag the marker or click on the map to position your listing. It will display accurately to searchers.</p>
+                  <div id="dashboard-map"></div>
                   <!-- Coordinate readout -->
                   <div class="coords-readout">
-                    <span>Lat: <strong>{{ listingModel.latitude.toFixed(4) }}</strong></span>
-                    <span>Lng: <strong>{{ listingModel.longitude.toFixed(4) }}</strong></span>
+                    <span>Latitude: <strong id="readout-lat">{{ listingModel.latitude }}</strong></span>
+                    <span>Longitude: <strong id="readout-lng">{{ listingModel.longitude }}</strong></span>
                   </div>
                 </div>
                 <div class="form-group">
@@ -750,93 +716,19 @@ import { AlertsService } from '../../core/services/alerts.service';
       grid-column: 1 / -1;
     }
 
-    /* ── Interactive Noida Map ──────────────────────────────── */
+    #dashboard-map {
+      height: 300px;
+      width: 100%;
+      border-radius: 8px;
+      border: 1.5px solid var(--card-border);
+      background: var(--card-bg-hover);
+      z-index: 1; /* Keep controls below dropdowns */
+    }
     .map-hint {
       font-size: 0.75rem;
       color: var(--text-secondary);
       margin: 0 0 0.5rem 0;
       transition: color 0.4s ease;
-    }
-    .form-map {
-      position: relative;
-      width: 100%;
-      height: 260px;
-      background: var(--card-bg-hover);
-      border: 1.5px solid var(--card-border);
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: crosshair;
-      transition: background 0.4s ease, border-color 0.4s ease;
-    }
-    .form-map:hover {
-      border-color: var(--accent-cyan);
-    }
-    .map-grid-lines {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-    .mg-h, .mg-v {
-      position: absolute;
-      background: var(--card-border);
-    }
-    .mg-h {
-      height: 1px;
-      width: 100%;
-    }
-    .mg-v {
-      width: 1px;
-      height: 100%;
-    }
-    .sector-label {
-      position: absolute;
-      font-size: 0.6rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 1px 5px;
-      border-radius: 3px;
-      pointer-events: none;
-      transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
-    }
-    .map-roads {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      color: var(--text-secondary);
-      pointer-events: none;
-    }
-    .map-pin {
-      position: absolute;
-      transform: translate(-50%, -100%);
-      pointer-events: none;
-      z-index: 10;
-    }
-    .pin-dot {
-      width: 14px;
-      height: 14px;
-      background: var(--accent-cyan);
-      border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
-      box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.3);
-      margin: 0 auto;
-    }
-    .pin-ring {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 30px;
-      height: 30px;
-      border: 2px solid rgba(0, 242, 254, 0.4);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      animation: pinPulse 1.5s ease-out infinite;
-    }
-    @keyframes pinPulse {
-      0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
     }
     .coords-readout {
       display: flex;
@@ -948,6 +840,10 @@ export class DashboardComponent implements OnInit {
   private readonly LNG_MIN = 77.26;
   private readonly LNG_MAX = 77.52;
 
+  // Leaflet map instances
+  private leafletMap: any = null;
+  private leafletMarker: any = null;
+
   // Forms Models
   listingModel: Listing = {
     title: '',
@@ -1030,6 +926,8 @@ export class DashboardComponent implements OnInit {
     this.showAddForm.set(!this.showAddForm());
     if (!this.showAddForm()) {
       this.resetForm();
+    } else {
+      setTimeout(() => this.initLeafletMap(), 100);
     }
   }
 
@@ -1063,6 +961,7 @@ export class DashboardComponent implements OnInit {
     this.listingModel = { ...listing };
     this.editMode.set(true);
     this.showAddForm.set(true);
+    setTimeout(() => this.initLeafletMap(), 100);
   }
 
   onStatusChange(): void {
@@ -1105,7 +1004,11 @@ export class DashboardComponent implements OnInit {
           this.loadData();
         },
         error: (err) => {
-          const msg = err?.error?.message || err?.message || 'Update failed. Please try again.';
+          console.error('Failed to update listing', err);
+          let msg = err?.error?.message || err?.message || 'Update failed. Please try again.';
+          if (err?.status === 403) {
+            msg = 'Access Forbidden (403): Your account role on the server is not authorized as OWNER. Please register a new account as Owner.';
+          }
           this.showToast(msg, true);
         }
       });
@@ -1117,7 +1020,11 @@ export class DashboardComponent implements OnInit {
           this.loadData();
         },
         error: (err) => {
-          const msg = err?.error?.message || err?.message || 'Failed to save listing. Please try again.';
+          console.error('Failed to create listing', err);
+          let msg = err?.error?.message || err?.message || 'Failed to save listing. Please try again.';
+          if (err?.status === 403) {
+            msg = 'Access Forbidden (403): Your account role on the server is not authorized as OWNER. Please register a new account as Owner.';
+          }
           this.showToast(msg, true);
         }
       });
@@ -1183,29 +1090,65 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  /** Convert a latitude value into a top% position for the 260px map */
-  getMapTop(lat: number): number {
-    // Inverted: higher lat = higher on map = lower % from top
-    return ((this.LAT_MAX - lat) / (this.LAT_MAX - this.LAT_MIN)) * 100;
-  }
+  // Leaflet map initialization
+  initLeafletMap(): void {
+    const container = document.getElementById('dashboard-map');
+    if (!container) return;
 
-  /** Convert a longitude value into a left% position for the map */
-  getMapLeft(lng: number): number {
-    return ((lng - this.LNG_MIN) / (this.LNG_MAX - this.LNG_MIN)) * 100;
-  }
+    if (this.leafletMap) {
+      try {
+        this.leafletMap.remove();
+      } catch (e) {
+        console.error(e);
+      }
+      this.leafletMap = null;
+      this.leafletMarker = null;
+    }
 
-  /** Handle a click on the map area to set latitude/longitude */
-  onMapClick(event: MouseEvent): void {
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    const xPercent = (event.clientX - rect.left) / rect.width;
-    const yPercent = (event.clientY - rect.top) / rect.height;
+    const L = (window as any).L;
+    if (!L) {
+      console.warn('Leaflet library is not loaded on window.');
+      return;
+    }
 
-    const lat = this.LAT_MAX - yPercent * (this.LAT_MAX - this.LAT_MIN);
-    const lng = this.LNG_MIN + xPercent * (this.LNG_MAX - this.LNG_MIN);
+    const startLat = this.listingModel.latitude || 28.62;
+    const startLng = this.listingModel.longitude || 77.36;
 
-    this.listingModel.latitude  = Math.round(lat * 10000) / 10000;
-    this.listingModel.longitude = Math.round(lng * 10000) / 10000;
+    // Initialize Leaflet Map centered at selected coordinates or Noida center
+    this.leafletMap = L.map('dashboard-map').setView([startLat, startLng], 13);
+
+    // Add standard OpenStreetMap roads/streets layer (fast, clean, attribution-contained)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.leafletMap);
+
+    // Place draggable marker
+    this.leafletMarker = L.marker([startLat, startLng], {
+      draggable: true
+    }).addTo(this.leafletMap);
+
+    // Update form coordinates on dragend
+    this.leafletMarker.on('dragend', () => {
+      const position = this.leafletMarker.getLatLng();
+      this.listingModel.latitude = Math.round(position.lat * 10000) / 10000;
+      this.listingModel.longitude = Math.round(position.lng * 10000) / 10000;
+    });
+
+    // Update marker and form coordinates on map click
+    this.leafletMap.on('click', (e: any) => {
+      const coords = e.latlng;
+      this.leafletMarker.setLatLng(coords);
+      this.listingModel.latitude = Math.round(coords.lat * 10000) / 10000;
+      this.listingModel.longitude = Math.round(coords.lng * 10000) / 10000;
+    });
+
+    // Solve map canvas sizing/rendering inside hidden Angular container grids
+    setTimeout(() => {
+      if (this.leafletMap) {
+        this.leafletMap.invalidateSize();
+      }
+    }, 150);
   }
 
   showToast(msg: string, isError = false): void {
