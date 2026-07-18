@@ -172,13 +172,51 @@ import { AlertsService } from '../../core/services/alerts.service';
                   <label for="address">Full Address Text</label>
                   <input type="text" id="address" name="address" [(ngModel)]="listingModel.addressText" required placeholder="A-45 Sector 62, Noida" />
                 </div>
-                <div class="form-group">
-                  <label for="lat">Latitude (Noida map placement)</label>
-                  <input type="number" step="0.0001" id="lat" name="lat" [(ngModel)]="listingModel.latitude" required placeholder="28.62" />
-                </div>
-                <div class="form-group">
-                  <label for="lng">Longitude</label>
-                  <input type="number" step="0.0001" id="lng" name="lng" [(ngModel)]="listingModel.longitude" required placeholder="77.36" />
+
+                <!-- Interactive Noida Map Selector -->
+                <div class="form-group full-width">
+                  <label>Pin Your Location on Noida Map</label>
+                  <p class="map-hint">Click or tap on the map to drop a pin at your property's location. Coordinates update automatically.</p>
+                  <div class="form-map" (click)="onMapClick($event)" #mapEl>
+                    <!-- Subtle grid overlay -->
+                    <div class="map-grid-lines">
+                      <div class="mg-h" style="top:25%"></div>
+                      <div class="mg-h" style="top:50%"></div>
+                      <div class="mg-h" style="top:75%"></div>
+                      <div class="mg-v" style="left:25%"></div>
+                      <div class="mg-v" style="left:50%"></div>
+                      <div class="mg-v" style="left:75%"></div>
+                    </div>
+                    <!-- Sector Labels -->
+                    <span class="sector-label" style="top:12%;left:18%">Sec 18</span>
+                    <span class="sector-label" style="top:22%;left:55%">Sec 62</span>
+                    <span class="sector-label" style="top:42%;left:35%">Sec 50</span>
+                    <span class="sector-label" style="top:55%;left:65%">Sec 137</span>
+                    <span class="sector-label" style="top:70%;left:22%">Sec 110</span>
+                    <span class="sector-label" style="top:78%;left:58%">Sec 152</span>
+                    <!-- Road lines -->
+                    <svg class="map-roads" viewBox="0 0 400 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <line x1="0" y1="130" x2="400" y2="130" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                      <line x1="200" y1="0" x2="200" y2="260" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                      <line x1="0" y1="65" x2="400" y2="65" stroke="currentColor" stroke-width="1" opacity="0.15"/>
+                      <line x1="0" y1="195" x2="400" y2="195" stroke="currentColor" stroke-width="1" opacity="0.15"/>
+                      <line x1="100" y1="0" x2="100" y2="260" stroke="currentColor" stroke-width="1" opacity="0.15"/>
+                      <line x1="300" y1="0" x2="300" y2="260" stroke="currentColor" stroke-width="1" opacity="0.15"/>
+                      <text x="188" y="124" font-size="9" fill="currentColor" opacity="0.4">Noida Centre</text>
+                    </svg>
+                    <!-- Draggable Pin -->
+                    <div class="map-pin"
+                         [style.top.%]="getMapTop(listingModel.latitude)"
+                         [style.left.%]="getMapLeft(listingModel.longitude)">
+                      <div class="pin-ring"></div>
+                      <div class="pin-dot"></div>
+                    </div>
+                  </div>
+                  <!-- Coordinate readout -->
+                  <div class="coords-readout">
+                    <span>Lat: <strong>{{ listingModel.latitude.toFixed(4) }}</strong></span>
+                    <span>Lng: <strong>{{ listingModel.longitude.toFixed(4) }}</strong></span>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="status">Availability Status</label>
@@ -301,7 +339,7 @@ import { AlertsService } from '../../core/services/alerts.service';
       }
 
       @if (toastMsg()) {
-        <div class="toast-popup">
+        <div class="toast-popup" [class.error]="toastError()">
           {{ toastMsg() }}
         </div>
       }
@@ -711,6 +749,107 @@ import { AlertsService } from '../../core/services/alerts.service';
     .form-group.full-width {
       grid-column: 1 / -1;
     }
+
+    /* ── Interactive Noida Map ──────────────────────────────── */
+    .map-hint {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin: 0 0 0.5rem 0;
+      transition: color 0.4s ease;
+    }
+    .form-map {
+      position: relative;
+      width: 100%;
+      height: 260px;
+      background: var(--card-bg-hover);
+      border: 1.5px solid var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: crosshair;
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    .form-map:hover {
+      border-color: var(--accent-cyan);
+    }
+    .map-grid-lines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .mg-h, .mg-v {
+      position: absolute;
+      background: var(--card-border);
+    }
+    .mg-h {
+      height: 1px;
+      width: 100%;
+    }
+    .mg-v {
+      width: 1px;
+      height: 100%;
+    }
+    .sector-label {
+      position: absolute;
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 1px 5px;
+      border-radius: 3px;
+      pointer-events: none;
+      transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    }
+    .map-roads {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+    .map-pin {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .pin-dot {
+      width: 14px;
+      height: 14px;
+      background: var(--accent-cyan);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.3);
+      margin: 0 auto;
+    }
+    .pin-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 30px;
+      height: 30px;
+      border: 2px solid rgba(0, 242, 254, 0.4);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: pinPulse 1.5s ease-out infinite;
+    }
+    @keyframes pinPulse {
+      0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+    }
+    .coords-readout {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      transition: color 0.4s ease;
+    }
+    .coords-readout strong {
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
     .checkbox-options {
       grid-column: 1 / -1;
     }
@@ -766,10 +905,16 @@ import { AlertsService } from '../../core/services/alerts.service';
       color: #121218;
       padding: 0.8rem 1.5rem;
       border-radius: 8px;
-      font-weight: 750;
+      font-weight: 700;
+      font-size: 0.85rem;
+      max-width: 360px;
       box-shadow: 0 10px 30px var(--shadow-color);
       z-index: 2000;
       animation: slideUp 0.3s ease;
+    }
+    .toast-popup.error {
+      background: #ff1744;
+      color: #fff;
     }
     @keyframes slideUp {
       from { transform: translateY(100px); opacity: 0; }
@@ -795,6 +940,13 @@ export class DashboardComponent implements OnInit {
   showAddForm = signal(false);
   editMode = signal(false);
   toastMsg = signal('');
+  toastError = signal(false);
+
+  // Noida bounding box for map conversions
+  private readonly LAT_MAX = 28.72;
+  private readonly LAT_MIN = 28.48;
+  private readonly LNG_MIN = 77.26;
+  private readonly LNG_MAX = 77.52;
 
   // Forms Models
   listingModel: Listing = {
@@ -921,24 +1073,52 @@ export class DashboardComponent implements OnInit {
 
   saveListing(): void {
     if (this.listingModel.status === 'available_from' && !this.listingModel.availableFromDate) {
-      this.showToast('Please specify the date property is available from.');
+      this.showToast('Please specify the date property is available from.', true);
+      return;
+    }
+    if (!this.listingModel.title || !this.listingModel.addressText) {
+      this.showToast('Listing Title and Address are required.', true);
       return;
     }
 
+    // Sanitize payload: remove empty optional strings that break backend validation
+    const payload: any = {
+      ...this.listingModel,
+      cityId: 1, // Noida = cityId 1
+      curfewTime: this.listingModel.curfewTime?.trim() || undefined,
+      availableFromDate: this.listingModel.availableFromDate?.trim() || undefined,
+      depositAmount: this.listingModel.depositAmount || undefined,
+      description: this.listingModel.description?.trim() || undefined,
+      ac: this.listingModel.ac || undefined,
+      furnishing: this.listingModel.furnishing?.trim() || undefined,
+      bathroomType: this.listingModel.bathroomType || undefined,
+      foodType: this.listingModel.foodIncluded ? (this.listingModel.foodType || 'veg') : undefined,
+    };
+    // Remove undefined keys so JSON.stringify omits them
+    Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+
     if (this.editMode() && this.listingModel.id) {
-      this.listingsService.updateListing(this.listingModel.id, this.listingModel).subscribe({
+      this.listingsService.updateListing(this.listingModel.id, payload).subscribe({
         next: () => {
           this.showToast('Listing updated successfully!');
           this.toggleAddForm();
           this.loadData();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || err?.message || 'Update failed. Please try again.';
+          this.showToast(msg, true);
         }
       });
     } else {
-      this.listingsService.createListing(this.listingModel).subscribe({
+      this.listingsService.createListing(payload).subscribe({
         next: () => {
           this.showToast('Listing posted successfully!');
           this.toggleAddForm();
           this.loadData();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || err?.message || 'Failed to save listing. Please try again.';
+          this.showToast(msg, true);
         }
       });
     }
@@ -1003,8 +1183,37 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  showToast(msg: string): void {
+  /** Convert a latitude value into a top% position for the 260px map */
+  getMapTop(lat: number): number {
+    // Inverted: higher lat = higher on map = lower % from top
+    return ((this.LAT_MAX - lat) / (this.LAT_MAX - this.LAT_MIN)) * 100;
+  }
+
+  /** Convert a longitude value into a left% position for the map */
+  getMapLeft(lng: number): number {
+    return ((lng - this.LNG_MIN) / (this.LNG_MAX - this.LNG_MIN)) * 100;
+  }
+
+  /** Handle a click on the map area to set latitude/longitude */
+  onMapClick(event: MouseEvent): void {
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const xPercent = (event.clientX - rect.left) / rect.width;
+    const yPercent = (event.clientY - rect.top) / rect.height;
+
+    const lat = this.LAT_MAX - yPercent * (this.LAT_MAX - this.LAT_MIN);
+    const lng = this.LNG_MIN + xPercent * (this.LNG_MAX - this.LNG_MIN);
+
+    this.listingModel.latitude  = Math.round(lat * 10000) / 10000;
+    this.listingModel.longitude = Math.round(lng * 10000) / 10000;
+  }
+
+  showToast(msg: string, isError = false): void {
     this.toastMsg.set(msg);
-    setTimeout(() => this.toastMsg.set(''), 3500);
+    this.toastError.set(isError);
+    setTimeout(() => {
+      this.toastMsg.set('');
+      this.toastError.set(false);
+    }, 4000);
   }
 }
