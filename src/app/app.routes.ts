@@ -6,10 +6,12 @@ import { ListingDetailComponent } from './features/listings/listing-detail/listi
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ChatComponent } from './features/chat/chat.component';
 import { AdminDashboardComponent } from './features/admin/admin-dashboard/admin-dashboard.component';
+import { LandingComponent } from './features/landing/landing.component';
 import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: ListingSearchComponent },
+  { path: '', component: LandingComponent },
+  { path: 'search', component: ListingSearchComponent },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'listings/:id', component: ListingDetailComponent },
@@ -19,3 +21,4 @@ export const routes: Routes = [
   { path: 'admin', component: AdminDashboardComponent, canActivate: [authGuard], data: { role: 'admin' } },
   { path: '**', redirectTo: '' }
 ];
+
