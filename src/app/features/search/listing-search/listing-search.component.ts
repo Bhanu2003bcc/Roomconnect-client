@@ -114,7 +114,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 
         @if (authService.isAuthenticated() && authService.userRole() === 'visitor') {
           <button (click)="saveSearchAlert()" class="alert-btn">
-            🔔 Save Search Alert
+            Save Search Alert
           </button>
         }
       </aside>
@@ -148,25 +148,24 @@ import { AuthService } from '../../../core/auth/auth.service';
                       class="favorite-badge"
                       [class.favorited]="isFavorited(item.id!)"
                     >
-                      ❤️
+                      ♥
                     </button>
                   }
                 </div>
                 <div class="card-details">
                   <h4>{{ item.title }}</h4>
-                  <p class="address">📍 {{ item.addressText }}</p>
+                  <p class="address">{{ item.addressText }}</p>
                   <div class="specs">
-                    <span *ngIf="item.wifi">📶 WiFi</span>
-                    <span *ngIf="item.parking">🚗 Parking</span>
-                    <span *ngIf="item.foodIncluded">🍴 Food</span>
-                    <span *ngIf="item.ac === 'ac'">❄️ AC</span>
+                    <span *ngIf="item.wifi">WiFi</span>
+                    <span *ngIf="item.parking">Parking</span>
+                    <span *ngIf="item.foodIncluded">Food</span>
+                    <span *ngIf="item.ac === 'ac'">AC</span>
                   </div>
                   <a [routerLink]="['/listings', item.id]" class="view-btn">View Details</a>
                 </div>
               </div>
             } @empty {
               <div class="empty-state">
-                <span class="icon">🔍</span>
                 <p>No listings match your search filters.</p>
               </div>
             }
@@ -179,7 +178,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                 <div class="grid-line horizontal"></div>
                 <div class="grid-line vertical"></div>
               </div>
-              <span class="centre-pin">📍 Noida Centre</span>
+              <span class="centre-pin">Noida Centre</span>
               
               @for (item of listings(); track item.id) {
                 <div
@@ -189,7 +188,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                   [routerLink]="['/listings', item.id]"
                 >
                   <div class="pin-pulse"></div>
-                  <span class="pin-marker">🏠</span>
+                  <div class="pin-dot"></div>
                   <div class="pin-tooltip">
                     <strong>{{ item.title }}</strong>
                     <span>₹{{ item.rentAmount }}</span>
@@ -221,30 +220,32 @@ import { AuthService } from '../../../core/auth/auth.service';
       }
     }
     .filters-sidebar {
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--card-bg);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 1.5rem;
       align-self: start;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .sidebar-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--card-border);
       padding-bottom: 0.8rem;
     }
     .sidebar-header h3 {
-      color: #fff;
+      color: var(--text-primary);
       margin: 0;
       font-size: 1.1rem;
+      transition: color 0.4s ease;
     }
     .clear-btn {
       background: transparent;
       border: 0;
-      color: #00f2fe;
+      color: var(--accent-cyan);
       cursor: pointer;
       font-size: 0.85rem;
       font-weight: 600;
@@ -256,17 +257,20 @@ import { AuthService } from '../../../core/auth/auth.service';
       gap: 0.5rem;
     }
     .filter-section label {
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--text-secondary);
       font-size: 0.85rem;
       font-weight: 600;
+      transition: color 0.4s ease;
     }
     .select-field {
-      background: #1a1a24;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
       border-radius: 6px;
-      color: #fff;
+      color: var(--text-primary);
       padding: 0.6rem;
       outline: none;
+      width: 100%;
+      transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
     }
     .category-pills {
       display: flex;
@@ -274,37 +278,40 @@ import { AuthService } from '../../../core/auth/auth.service';
       gap: 0.5rem;
     }
     .pill-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 20px;
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--text-secondary);
       font-size: 0.75rem;
       font-weight: 600;
       padding: 0.4rem 0.8rem;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
     .pill-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--card-bg-hover);
+      color: var(--text-primary);
     }
     .pill-btn.active {
-      background: #00f2fe;
+      background: var(--accent-cyan);
       color: #121218;
-      border-color: #00f2fe;
+      border-color: var(--accent-cyan);
     }
     .rent-inputs {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-secondary);
     }
     .rent-field {
-      background: #1a1a24;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
       border-radius: 6px;
-      color: #fff;
+      color: var(--text-primary);
       padding: 0.5rem;
       width: 100%;
       outline: none;
+      transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
     }
     .checkbox-grid {
       display: grid;
@@ -315,15 +322,16 @@ import { AuthService } from '../../../core/auth/auth.service';
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary);
       font-size: 0.8rem;
       cursor: pointer;
+      transition: color 0.4s ease;
     }
     .alert-btn {
       width: 100%;
       background: rgba(255, 184, 0, 0.1);
       border: 1px solid rgba(255, 184, 0, 0.3);
-      color: #ffb800;
+      color: var(--accent-gold);
       padding: 0.7rem;
       border-radius: 6px;
       cursor: pointer;
@@ -344,22 +352,24 @@ import { AuthService } from '../../../core/auth/auth.service';
       gap: 1rem;
     }
     .results-header h2 {
-      color: #fff;
+      color: var(--text-primary);
       margin: 0;
       font-size: 1.4rem;
       font-weight: 800;
       letter-spacing: -0.5px;
+      transition: color 0.4s ease;
     }
     .view-toggle {
       display: flex;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--card-bg);
       border-radius: 8px;
       padding: 0.2rem;
+      border: 1px solid var(--card-border);
     }
     .view-toggle button {
       background: transparent;
       border: 0;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-secondary);
       padding: 0.4rem 0.9rem;
       border-radius: 6px;
       cursor: pointer;
@@ -368,8 +378,8 @@ import { AuthService } from '../../../core/auth/auth.service';
       transition: all 0.2s ease;
     }
     .view-toggle button.active {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
+      background: var(--card-bg-hover);
+      color: var(--text-primary);
     }
     .listings-grid {
       display: grid;
@@ -377,16 +387,17 @@ import { AuthService } from '../../../core/auth/auth.service';
       gap: 1.5rem;
     }
     .listing-card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
       overflow: hidden;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
     }
     .listing-card:hover {
       transform: translateY(-2px);
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.15);
+      background: var(--card-bg-hover);
+      border-color: var(--card-border-hover);
+      box-shadow: 0 8px 24px var(--shadow-color);
     }
     .card-image-placeholder {
       height: 160px;
@@ -394,7 +405,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       position: relative;
     }
     .category-label {
-      background: #00f2fe;
+      background: var(--accent-cyan);
       color: #121218;
       font-size: 0.7rem;
       font-weight: 800;
@@ -416,8 +427,9 @@ import { AuthService } from '../../../core/auth/auth.service';
       left: 0.8rem;
     }
     .favorite-badge {
-      background: rgba(0, 0, 0, 0.6);
-      border: 0;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
       border-radius: 50%;
       width: 32px;
       height: 32px;
@@ -428,13 +440,16 @@ import { AuthService } from '../../../core/auth/auth.service';
       top: 0.8rem;
       right: 0.8rem;
       cursor: pointer;
-      opacity: 0.7;
-      transition: opacity 0.2s ease;
+      opacity: 0.8;
+      transition: all 0.2s ease;
+      font-size: 1.15rem;
+      line-height: 1;
     }
     .favorite-badge:hover, .favorite-badge.favorited {
       opacity: 1;
-      background: rgba(255, 51, 102, 0.15);
-      border: 1px solid rgba(255, 51, 102, 0.3);
+      background: rgba(255, 51, 102, 0.2);
+      border-color: var(--accent-rose);
+      color: var(--accent-rose);
     }
     .card-details {
       padding: 1.2rem;
@@ -443,15 +458,17 @@ import { AuthService } from '../../../core/auth/auth.service';
       gap: 0.5rem;
     }
     .card-details h4 {
-      color: #fff;
+      color: var(--text-primary);
       margin: 0;
       font-size: 1rem;
       font-weight: 700;
+      transition: color 0.4s ease;
     }
     .card-details .address {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-secondary);
       font-size: 0.8rem;
       margin: 0;
+      transition: color 0.4s ease;
     }
     .specs {
       display: flex;
@@ -461,15 +478,17 @@ import { AuthService } from '../../../core/auth/auth.service';
     }
     .specs span {
       font-size: 0.7rem;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 0.15rem 0.4rem;
+      background: var(--card-bg-hover);
+      border: 1px solid var(--card-border);
+      padding: 0.15rem 0.5rem;
       border-radius: 4px;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary);
+      transition: all 0.4s ease;
     }
     .view-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #fff;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
       text-decoration: none;
       text-align: center;
       font-size: 0.85rem;
@@ -480,35 +499,32 @@ import { AuthService } from '../../../core/auth/auth.service';
       margin-top: 0.5rem;
     }
     .view-btn:hover {
-      background: #00f2fe;
+      background: var(--accent-cyan);
       color: #121218;
-      border-color: #00f2fe;
+      border-color: var(--accent-cyan);
     }
     .empty-state {
       grid-column: 1 / -1;
       text-align: center;
       padding: 4rem;
-      color: rgba(255, 255, 255, 0.4);
-    }
-    .empty-state .icon {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 1rem;
+      color: var(--text-secondary);
     }
     .map-view-wrapper {
-      background: #111118;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
       overflow: hidden;
       height: 480px;
       display: flex;
       flex-direction: column;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .noida-map {
       flex: 1;
       position: relative;
-      background: radial-gradient(circle at center, #1b1b2a 0%, #0d0d12 100%);
+      background: radial-gradient(circle at center, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
       overflow: hidden;
+      transition: background 0.4s ease;
     }
     .map-grid {
       position: absolute;
@@ -518,7 +534,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       pointer-events: none;
     }
     .grid-line {
-      background: #fff;
+      background: var(--text-primary);
       position: absolute;
     }
     .grid-line.horizontal {
@@ -536,14 +552,16 @@ import { AuthService } from '../../../core/auth/auth.service';
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.8);
-      color: #fff;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
       font-size: 0.75rem;
       font-weight: 700;
-      padding: 0.3rem 0.6rem;
+      padding: 0.3rem 0.8rem;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--card-border);
       pointer-events: none;
+      box-shadow: 0 4px 10px var(--shadow-color);
+      transition: all 0.4s ease;
     }
     .map-pin {
       position: absolute;
@@ -551,11 +569,16 @@ import { AuthService } from '../../../core/auth/auth.service';
       transform: translate(-50%, -50%);
       z-index: 10;
     }
-    .pin-marker {
-      font-size: 1.5rem;
-      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+    .pin-dot {
+      width: 14px;
+      height: 14px;
+      background: var(--accent-cyan);
+      border: 2px solid var(--bg-secondary);
+      border-radius: 50%;
+      box-shadow: 0 2px 6px var(--shadow-color);
       position: relative;
       z-index: 2;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .pin-pulse {
       width: 24px;
@@ -583,11 +606,11 @@ import { AuthService } from '../../../core/auth/auth.service';
     }
     .pin-tooltip {
       position: absolute;
-      bottom: 120%;
+      bottom: 130%;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
       border-radius: 6px;
       padding: 0.5rem;
       display: flex;
@@ -597,34 +620,36 @@ import { AuthService } from '../../../core/auth/auth.service';
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.2s ease;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 5px 15px var(--shadow-color);
     }
     .map-pin:hover .pin-tooltip {
       opacity: 1;
     }
     .pin-tooltip strong {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 0.75rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: color 0.4s ease;
     }
     .pin-tooltip span {
-      color: #00f2fe;
+      color: var(--accent-cyan);
       font-size: 0.7rem;
       font-weight: 700;
     }
     .map-legend {
-      background: #0d0d12;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--card-border);
       padding: 0.8rem 1.2rem;
       font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-secondary);
+      transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
     }
     .toast-alert {
-      background: rgba(0, 242, 254, 0.15);
-      border: 1px solid rgba(0, 242, 254, 0.3);
-      color: #00f2fe;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      color: var(--accent-cyan);
       border-radius: 8px;
       padding: 0.8rem 1.2rem;
       font-size: 0.85rem;

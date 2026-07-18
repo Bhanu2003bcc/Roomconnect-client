@@ -61,30 +61,28 @@ import { RouterModule } from '@angular/router';
 
             <div class="hero-cta">
               <a routerLink="/search" class="btn-primary" id="hero-find-room-btn">
-                <span class="btn-icon">🔍</span>
                 Find My Room
               </a>
               <a routerLink="/signup" class="btn-secondary" id="hero-list-property-btn">
-                <span class="btn-icon">🏠</span>
                 List a Property
               </a>
             </div>
 
             <div class="trust-badges">
               <div class="badge-item">
-                <span class="badge-icon">✅</span>
+                <span class="badge-icon">✓</span>
                 <span>500+ Listings</span>
               </div>
               <div class="badge-item">
-                <span class="badge-icon">💰</span>
+                <span class="badge-icon">✓</span>
                 <span>Zero Brokerage</span>
               </div>
               <div class="badge-item">
-                <span class="badge-icon">🔒</span>
+                <span class="badge-icon">✓</span>
                 <span>Verified Owners</span>
               </div>
               <div class="badge-item">
-                <span class="badge-icon">⚡</span>
+                <span class="badge-icon">✓</span>
                 <span>Instant Connect</span>
               </div>
             </div>
@@ -149,14 +147,10 @@ import { RouterModule } from '@angular/router';
               <!-- Location pin -->
               <div class="location-pin">
                 <div class="pin-body">
-                  <span class="pin-emoji">📍</span>
                   <div class="pin-pulse-ring"></div>
                 </div>
                 <div class="pin-label">Noida, UP</div>
               </div>
-
-              <!-- Key icon -->
-              <div class="key-icon">🔑</div>
 
               <!-- Floating listing mini-cards -->
               <div class="float-card fc-1">
@@ -164,7 +158,7 @@ import { RouterModule } from '@angular/router';
                 <div class="fc-info">
                   <span class="fc-tag">1BHK</span>
                   <span class="fc-price">₹9,500/mo</span>
-                  <span class="fc-loc">📍 Sector 62</span>
+                  <span class="fc-loc">Sector 62</span>
                 </div>
               </div>
 
@@ -173,7 +167,7 @@ import { RouterModule } from '@angular/router';
                 <div class="fc-info">
                   <span class="fc-tag">PG</span>
                   <span class="fc-price">₹6,200/mo</span>
-                  <span class="fc-loc">📍 Sector 18</span>
+                  <span class="fc-loc">Sector 18</span>
                 </div>
               </div>
 
@@ -182,7 +176,7 @@ import { RouterModule } from '@angular/router';
                 <div class="fc-info">
                   <span class="fc-tag">2BHK</span>
                   <span class="fc-price">₹16,000/mo</span>
-                  <span class="fc-loc">📍 Sector 50</span>
+                  <span class="fc-loc">Sector 50</span>
                 </div>
               </div>
 
@@ -261,9 +255,9 @@ import { RouterModule } from '@angular/router';
                   </div>
                 </div>
               </div>
-              <div class="fs-badge-float fs-b1">🔒 Safe</div>
-              <div class="fs-badge-float fs-b2">⚡ Fast</div>
-              <div class="fs-badge-float fs-b3">💯 Verified</div>
+              <div class="fs-badge-float fs-b1">Safe</div>
+              <div class="fs-badge-float fs-b2">Fast</div>
+              <div class="fs-badge-float fs-b3">Verified</div>
             </div>
           </div>
 
@@ -318,7 +312,7 @@ import { RouterModule } from '@angular/router';
           <p class="cta-sub">Join thousands of happy renters in Noida. It's free to search.</p>
           <div class="cta-actions">
             <a routerLink="/search" class="btn-primary btn-large" id="cta-search-btn">
-              🔍 Browse All Rooms
+              Browse All Rooms
             </a>
             <a routerLink="/signup" class="btn-outline btn-large" id="cta-signup-btn">
               Create Free Account
@@ -1177,27 +1171,27 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   steps = [
-    { icon: '🔍', title: 'Search & Filter',    desc: 'Use smart filters — radius, budget, category, amenities — to find your ideal room in seconds.' },
-    { icon: '📞', title: 'Connect Directly',   desc: 'Message or call verified owners directly. No middlemen, no brokerage, no hidden fees.' },
-    { icon: '🔑', title: 'Move In Happy',       desc: 'Visit the property, finalise the deal, and move in with full confidence in your new home.' },
+    { icon: '1', title: 'Search & Filter',    desc: 'Use smart filters — radius, budget, category, amenities — to find your ideal room in seconds.' },
+    { icon: '2', title: 'Connect Directly',   desc: 'Message or call verified owners directly. No middlemen, no brokerage, no hidden fees.' },
+    { icon: '3', title: 'Move In Happy',       desc: 'Visit the property, finalise the deal, and move in with full confidence in your new home.' },
   ];
 
   categories = [
-    { icon: '🏠', name: 'PG',               count: '120+', gradient: 'linear-gradient(135deg, #00f2fe, #4facfe)' },
-    { icon: '🏡', name: '1 BHK',            count: '95+',  gradient: 'linear-gradient(135deg, #a855f7, #6366f1)' },
-    { icon: '🏘️', name: '2 BHK',            count: '80+',  gradient: 'linear-gradient(135deg, #f97316, #fb923c)' },
-    { icon: '🏗️', name: '3 BHK',            count: '45+',  gradient: 'linear-gradient(135deg, #22c55e, #16a34a)' },
-    { icon: '🛏️', name: 'Single Room',      count: '110+', gradient: 'linear-gradient(135deg, #ec4899, #f43f5e)' },
-    { icon: '🏢', name: 'Independent Floor', count: '50+',  gradient: 'linear-gradient(135deg, #ffb800, #f59e0b)' },
+    { icon: 'PG', name: 'PG',               count: '120+', gradient: 'linear-gradient(135deg, #00f2fe, #4facfe)' },
+    { icon: '1B', name: '1 BHK',            count: '95+',  gradient: 'linear-gradient(135deg, #a855f7, #6366f1)' },
+    { icon: '2B', name: '2 BHK',            count: '80+',  gradient: 'linear-gradient(135deg, #f97316, #fb923c)' },
+    { icon: '3B', name: '3 BHK',            count: '45+',  gradient: 'linear-gradient(135deg, #22c55e, #16a34a)' },
+    { icon: 'SR', name: 'Single Room',      count: '110+', gradient: 'linear-gradient(135deg, #ec4899, #f43f5e)' },
+    { icon: 'IF', name: 'Independent Floor', count: '50+',  gradient: 'linear-gradient(135deg, #ffb800, #f59e0b)' },
   ];
 
   features = [
-    { icon: '✅', iconBg: 'rgba(0,242,254,0.12)',   title: 'Zero Brokerage Guarantee',    desc: 'Connect with owners directly. Every single listing on Rent2Live is broker-free.' },
-    { icon: '🔒', iconBg: 'rgba(168,85,247,0.12)',  title: 'DPDP-Compliant & Secure',     desc: 'Your personal data is protected under the Digital Personal Data Protection Act.' },
-    { icon: '📸', iconBg: 'rgba(249,115,22,0.12)',  title: 'Photo-Verified Listings',     desc: 'All listings must include real photos. No fake or misleading listings — ever.' },
-    { icon: '💬', iconBg: 'rgba(34,197,94,0.12)',   title: 'In-App Owner Chat',           desc: 'Chat securely with property owners without sharing your number until you\'re ready.' },
-    { icon: '🔔', iconBg: 'rgba(255,184,0,0.12)',   title: 'Smart Search Alerts',         desc: 'Save your search and get notified the moment a matching room becomes available.' },
-    { icon: '📍', iconBg: 'rgba(236,72,153,0.12)',  title: 'Hyper-Local Map View',        desc: 'See listings plotted on a Noida map. Filter by distance from your workplace or college.' },
+    { icon: '✓', iconBg: 'rgba(0,242,254,0.12)',   title: 'Zero Brokerage Guarantee',    desc: 'Connect with owners directly. Every single listing on Rent2Live is broker-free.' },
+    { icon: '✓', iconBg: 'rgba(168,85,247,0.12)',  title: 'DPDP-Compliant & Secure',     desc: 'Your personal data is protected under the Digital Personal Data Protection Act.' },
+    { icon: '✓', iconBg: 'rgba(249,115,22,0.12)',  title: 'Photo-Verified Listings',     desc: 'All listings must include real photos. No fake or misleading listings — ever.' },
+    { icon: '✓', iconBg: 'rgba(34,197,94,0.12)',   title: 'In-App Owner Chat',           desc: 'Chat securely with property owners without sharing your number until you\'re ready.' },
+    { icon: '✓', iconBg: 'rgba(255,184,0,0.12)',   title: 'Smart Search Alerts',         desc: 'Save your search and get notified the moment a matching room becomes available.' },
+    { icon: '✓', iconBg: 'rgba(236,72,153,0.12)',  title: 'Hyper-Local Map View',        desc: 'See listings plotted on a Noida map. Filter by distance from your workplace or college.' },
   ];
 
   testimonials = [

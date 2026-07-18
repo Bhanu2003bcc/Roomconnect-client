@@ -24,14 +24,14 @@ import { AlertsService } from '../../core/services/alerts.service';
 
             <!-- Booked Tours -->
             <div class="section">
-              <h3>📅 Scheduled Site Visits ({{ tours().length }})</h3>
+              <h3>Scheduled Site Visits ({{ tours().length }})</h3>
               <div class="tours-list">
                 @for (t of tours(); track t.id) {
                   <div class="tour-card" [ngClass]="t.status">
                     <div class="tour-info">
                       <strong>{{ t.listingTitle }}</strong>
-                      <span class="address">📍 {{ t.listingAddress }}</span>
-                      <span class="time">🕒 {{ t.requestedTime | date:'medium' }}</span>
+                      <span class="address">Address: {{ t.listingAddress }}</span>
+                      <span class="time">Time: {{ t.requestedTime | date:'medium' }}</span>
                       <p *ngIf="t.notes" class="notes">"{{ t.notes }}"</p>
                     </div>
                     <div class="tour-action">
@@ -49,7 +49,7 @@ import { AlertsService } from '../../core/services/alerts.service';
 
             <!-- Saved Alerts -->
             <div class="section">
-              <h3>🔔 Active Saved Searches ({{ alerts().length }})</h3>
+              <h3>Active Saved Searches ({{ alerts().length }})</h3>
               <div class="alerts-list">
                 @for (a of alerts(); track a.id) {
                   <div class="alert-card">
@@ -62,7 +62,7 @@ import { AlertsService } from '../../core/services/alerts.service';
                       </span>
                       <span class="last-run" *ngIf="a.lastNotifiedAt">Last notified: {{ a.lastNotifiedAt | date:'short' }}</span>
                     </div>
-                    <button (click)="deleteAlert(a.id)" class="delete-icon">🗑️</button>
+                    <button (click)="deleteAlert(a.id)" class="delete-icon" aria-label="Delete">×</button>
                   </div>
                 } @empty {
                   <div class="empty-list">No saved search alerts. Save searches to get email notifications on matches!</div>
@@ -74,13 +74,13 @@ import { AlertsService } from '../../core/services/alerts.service';
           <!-- Visitor Right Panel (Favorites) -->
           <div class="panel-right">
             <div class="section favorites-section">
-              <h3>❤️ Saved Favorites ({{ favorites().length }})</h3>
+              <h3>Saved Favorites ({{ favorites().length }})</h3>
               <div class="favorites-grid">
                 @for (f of favorites(); track f.listingId) {
                   <div class="fav-card">
                     <div class="card-details">
                       <h4>Listing Details</h4>
-                      <p class="address">📍 Listing ID: {{ f.listingId }}</p>
+                      <p class="address">Listing ID: {{ f.listingId }}</p>
                       <div class="fav-actions">
                         <a [routerLink]="['/listings', f.listingId]" class="details-link">View Details</a>
                         <button (click)="removeFavorite(f.listingId)" class="remove-fav-btn">Remove</button>
@@ -89,7 +89,6 @@ import { AlertsService } from '../../core/services/alerts.service';
                   </div>
                 } @empty {
                   <div class="empty-list text-center" style="padding: 2rem 0;">
-                    <span>🤍</span>
                     <p>Your saved favorites list is empty.</p>
                   </div>
                 }
@@ -108,18 +107,18 @@ import { AlertsService } from '../../core/services/alerts.service';
               <p>Manage listing parameters, availability state machines, and view site visits.</p>
             </div>
             <button (click)="toggleAddForm()" class="add-listing-btn">
-              {{ showAddForm() ? 'Close Form' : '➕ List New Property' }}
+              {{ showAddForm() ? 'Close Form' : 'List New Property' }}
             </button>
           </div>
 
           <!-- Add / Edit Listing Form -->
           @if (showAddForm()) {
             <div class="section form-section">
-              <h3>{{ editMode() ? '✏️ Edit Listing Details' : '🏠 List a Noida Room/Flat' }}</h3>
+              <h3>{{ editMode() ? 'Edit Listing Details' : 'List a Noida Room/Flat' }}</h3>
               <form (ngSubmit)="saveListing()" class="form-grid">
                 <div class="form-group">
                   <label for="title">Listing Title</label>
-                  <input type="text" id="title" name="title" [(ngModel)]="listingModel.title" required placeholder="Aesthetic Cozy Room near Sector 62" />
+                  <input type="text" id="title" name="title" [(ngModel)]="listingModel.title" required placeholder="Cozy Room near Sector 62" />
                 </div>
                 <div class="form-group">
                   <label for="category">Category</label>
@@ -231,24 +230,24 @@ import { AlertsService } from '../../core/services/alerts.service';
           <div class="owner-columns">
             <!-- Properties Listing CRUD -->
             <div class="section col-listings">
-              <h3>🏠 My Property Listings ({{ properties().length }})</h3>
+              <h3>My Property Listings ({{ properties().length }})</h3>
               <div class="properties-list">
                 @for (p of properties(); track p.id) {
                   <div class="property-card">
                     <div class="prop-details">
                       <h4>{{ p.title }}</h4>
                       <span class="rent">Rent: ₹{{ p.rentAmount }}</span>
-                      <span class="address">📍 {{ p.addressText }}</span>
+                      <span class="address">Address: {{ p.addressText }}</span>
                       <span class="status-indicator" [ngClass]="p.status">{{ p.status | uppercase }}</span>
                     </div>
                     
                     <!-- S3 Media Uploading Widget inside Card -->
                     <div class="media-upload-section">
-                      <h5>📸 Media Gallery ({{ p.media?.length || 0 }})</h5>
+                      <h5>Media Gallery ({{ p.media?.length || 0 }})</h5>
                       <div class="gallery-thumbs">
                         @for (m of p.media; track m.id) {
                           <div class="thumb-wrapper">
-                            <span class="thumb-placeholder">🖼️</span>
+                            <span class="thumb-placeholder">Image</span>
                             <button (click)="deleteImage(p.id!, m.id)" class="del-thumb-btn">×</button>
                           </div>
                         }
@@ -273,14 +272,14 @@ import { AlertsService } from '../../core/services/alerts.service';
 
             <!-- Tour Approvals List -->
             <div class="section col-tours">
-              <h3>📥 Site Visit Requests ({{ ownerTours().length }})</h3>
+              <h3>Site Visit Requests ({{ ownerTours().length }})</h3>
               <div class="owner-tours-list">
                 @for (t of ownerTours(); track t.id) {
                   <div class="tour-request-card" [ngClass]="t.status">
                     <div class="req-info">
                       <strong>{{ t.listingTitle }}</strong>
                       <span class="visitor">Visitor ID: {{ t.visitorId }}</span>
-                      <span class="time">🕒 {{ t.requestedTime | date:'medium' }}</span>
+                      <span class="time">Time: {{ t.requestedTime | date:'medium' }}</span>
                       <p *ngIf="t.notes" class="notes">"{{ t.notes }}"</p>
                     </div>
                     <div class="req-actions">
@@ -316,30 +315,34 @@ import { AlertsService } from '../../core/services/alerts.service';
       min-height: calc(100vh - 180px);
     }
     h2 {
-      color: #fff;
+      color: var(--text-primary);
       margin: 0;
       font-weight: 800;
       letter-spacing: -0.5px;
+      transition: color 0.4s ease;
     }
     .subtitle {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-secondary);
       margin: 0.3rem 0 1.5rem 0;
       font-size: 0.95rem;
+      transition: color 0.4s ease;
     }
     .section {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .section h3 {
-      color: #fff;
+      color: var(--text-primary);
       margin: 0 0 1.2rem 0;
       font-size: 1.1rem;
       font-weight: 700;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--card-border);
       padding-bottom: 0.5rem;
+      transition: color 0.4s ease, border-color 0.4s ease;
     }
     .dashboard-layout {
       display: grid;
@@ -352,14 +355,15 @@ import { AlertsService } from '../../core/services/alerts.service';
       }
     }
     .empty-list {
-      color: rgba(255, 255, 255, 0.4);
+      color: var(--text-secondary);
       font-size: 0.85rem;
       padding: 1rem 0;
+      transition: color 0.4s ease;
     }
     /* Tours / Alerts Style */
     .tour-card, .alert-card, .tour-request-card {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--card-bg-hover);
+      border: 1px solid var(--card-border);
       border-radius: 8px;
       padding: 1rem;
       margin-bottom: 0.8rem;
@@ -367,6 +371,7 @@ import { AlertsService } from '../../core/services/alerts.service';
       justify-content: space-between;
       align-items: center;
       gap: 1rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .tour-card.confirmed, .tour-request-card.confirmed {
       border-left: 4px solid #00e676;
@@ -383,23 +388,27 @@ import { AlertsService } from '../../core/services/alerts.service';
       gap: 0.3rem;
     }
     .tour-info strong, .alert-info strong, .req-info strong {
-      color: #fff;
+      color: var(--text-primary);
       font-size: 0.95rem;
+      transition: color 0.4s ease;
     }
     .tour-info .address, .visitor {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-secondary);
       font-size: 0.8rem;
+      transition: color 0.4s ease;
     }
     .tour-info .time, .time {
-      color: #00f2fe;
+      color: var(--accent-blue);
       font-size: 0.8rem;
       font-weight: 600;
+      transition: color 0.4s ease;
     }
     .notes {
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-secondary);
       font-size: 0.8rem;
       font-style: italic;
       margin: 0.3rem 0 0 0;
+      transition: color 0.4s ease;
     }
     .tour-action, .req-actions {
       display: flex;
@@ -416,7 +425,7 @@ import { AlertsService } from '../../core/services/alerts.service';
     .status-badge.requested { background: rgba(255, 184, 0, 0.15); color: #ffb800; }
     .status-badge.confirmed { background: rgba(0, 230, 118, 0.15); color: #00e676; }
     .status-badge.declined { background: rgba(255, 23, 68, 0.15); color: #ff1744; }
-    .status-badge.cancelled { background: rgba(255, 255, 255, 0.08); color: rgba(255,255,255,0.4); }
+    .status-badge.cancelled { background: var(--card-border); color: var(--text-secondary); }
     .cancel-btn, .decline-btn {
       background: transparent;
       border: 1px solid rgba(255, 23, 68, 0.3);
@@ -438,19 +447,23 @@ import { AlertsService } from '../../core/services/alerts.service';
       cursor: pointer;
     }
     .filters-summary, .last-run {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-secondary);
       font-size: 0.8rem;
+      transition: color 0.4s ease;
     }
     .delete-icon {
       background: transparent;
       border: 0;
       cursor: pointer;
-      font-size: 1.1rem;
+      font-size: 1.25rem;
+      color: var(--text-secondary);
       opacity: 0.6;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.2s ease, color 0.4s ease;
+      line-height: 1;
     }
     .delete-icon:hover {
       opacity: 1;
+      color: #ff1744;
     }
 
     /* Favorites column styles */
@@ -460,15 +473,17 @@ import { AlertsService } from '../../core/services/alerts.service';
       gap: 0.8rem;
     }
     .fav-card {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--card-bg-hover);
+      border: 1px solid var(--card-border);
       border-radius: 8px;
       padding: 1rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .fav-card h4 {
-      color: #fff;
+      color: var(--text-primary);
       margin: 0;
       font-size: 0.9rem;
+      transition: color 0.4s ease;
     }
     .fav-actions {
       display: flex;
@@ -476,7 +491,7 @@ import { AlertsService } from '../../core/services/alerts.service';
       margin-top: 0.5rem;
     }
     .details-link {
-      color: #00f2fe;
+      color: var(--accent-cyan);
       text-decoration: none;
       font-size: 0.8rem;
       font-weight: 600;
@@ -484,10 +499,11 @@ import { AlertsService } from '../../core/services/alerts.service';
     .remove-fav-btn {
       background: transparent;
       border: 0;
-      color: rgba(255, 255, 255, 0.4);
+      color: var(--text-secondary);
       font-size: 0.8rem;
       cursor: pointer;
       text-decoration: underline;
+      transition: color 0.4s ease;
     }
     .remove-fav-btn:hover {
       color: #ff3366;
@@ -505,8 +521,9 @@ import { AlertsService } from '../../core/services/alerts.service';
       align-items: center;
       flex-wrap: wrap;
       gap: 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--card-border);
       padding-bottom: 1rem;
+      transition: border-color 0.4s ease;
     }
     .add-listing-btn {
       background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
@@ -529,24 +546,27 @@ import { AlertsService } from '../../core/services/alerts.service';
       }
     }
     .property-card {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--card-bg-hover);
+      border: 1px solid var(--card-border);
       border-radius: 8px;
       padding: 1.2rem;
       margin-bottom: 1rem;
       display: flex;
       flex-direction: column;
       gap: 0.8rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .prop-details h4 {
-      color: #fff;
+      color: var(--text-primary);
       margin: 0 0 0.3rem 0;
       font-size: 1.05rem;
+      transition: color 0.4s ease;
     }
     .prop-details span {
       display: block;
       font-size: 0.8rem;
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-secondary);
+      transition: color 0.4s ease;
     }
     .prop-details .status-indicator {
       display: inline-block;
@@ -564,14 +584,15 @@ import { AlertsService } from '../../core/services/alerts.service';
       gap: 0.5rem;
     }
     .prop-actions button {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #fff;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
       font-size: 0.75rem;
       font-weight: 600;
       padding: 0.35rem 0.8rem;
       border-radius: 4px;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
     .prop-actions button.delete-btn {
       color: #ff1744;
@@ -581,20 +602,22 @@ import { AlertsService } from '../../core/services/alerts.service';
       background: rgba(255, 23, 68, 0.1);
     }
     .prop-actions button:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--card-bg-hover);
     }
 
     /* Media Upload Area in property card */
     .media-upload-section {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px dashed rgba(255, 255, 255, 0.15);
+      background: var(--card-bg);
+      border: 1px dashed var(--card-border);
       border-radius: 6px;
       padding: 0.8rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .media-upload-section h5 {
       margin: 0 0 0.5rem 0;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary);
       font-size: 0.75rem;
+      transition: color 0.4s ease;
     }
     .gallery-thumbs {
       display: flex;
@@ -604,28 +627,32 @@ import { AlertsService } from '../../core/services/alerts.service';
     }
     .thumb-wrapper {
       position: relative;
-      width: 40px;
+      width: 60px;
       height: 40px;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--card-bg-hover);
+      border: 1px solid var(--card-border);
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
     .thumb-placeholder {
-      font-size: 0.9rem;
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      transition: color 0.4s ease;
     }
     .del-thumb-btn {
       position: absolute;
-      top: -4px;
-      right: -4px;
-      width: 14px;
-      height: 14px;
+      top: -6px;
+      right: -6px;
+      width: 16px;
+      height: 16px;
       background: #ff1744;
       border: 0;
       border-radius: 50%;
       color: #fff;
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -636,12 +663,16 @@ import { AlertsService } from '../../core/services/alerts.service';
       display: inline-block;
       background: rgba(0, 242, 254, 0.1);
       border: 1px solid rgba(0, 242, 254, 0.3);
-      color: #00f2fe;
+      color: var(--accent-cyan);
       font-size: 0.7rem;
       font-weight: 700;
       padding: 0.25rem 0.6rem;
       border-radius: 4px;
       cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .file-upload-label:hover {
+      background: rgba(0, 242, 254, 0.2);
     }
     .hidden-file-input {
       display: none;
@@ -662,18 +693,20 @@ import { AlertsService } from '../../core/services/alerts.service';
       gap: 0.3rem;
     }
     .form-group label {
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary);
       font-size: 0.8rem;
       font-weight: 600;
+      transition: color 0.4s ease;
     }
     .form-group input:not([type="checkbox"]), .form-group select, .form-group textarea {
-      background: #1a1a24;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
       border-radius: 6px;
-      color: #fff;
+      color: var(--text-primary);
       padding: 0.6rem;
       outline: none;
       font-family: inherit;
+      transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
     }
     .form-group.full-width {
       grid-column: 1 / -1;
@@ -691,9 +724,10 @@ import { AlertsService } from '../../core/services/alerts.service';
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      color: rgba(255,255,255,0.7);
+      color: var(--text-secondary);
       font-size: 0.85rem;
       cursor: pointer;
+      transition: color 0.4s ease;
     }
     .form-actions {
       display: flex;
@@ -711,12 +745,16 @@ import { AlertsService } from '../../core/services/alerts.service';
     }
     .cancel-form-btn {
       background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
       font-weight: 600;
       padding: 0.7rem 1.5rem;
       border-radius: 6px;
       cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .cancel-form-btn:hover {
+      background: var(--card-bg-hover);
     }
 
     /* Toast popup styles */
@@ -724,13 +762,12 @@ import { AlertsService } from '../../core/services/alerts.service';
       position: fixed;
       bottom: 2rem;
       right: 2rem;
-      background: rgba(0, 242, 254, 0.95);
-      backdrop-filter: blur(10px);
+      background: var(--accent-cyan);
       color: #121218;
       padding: 0.8rem 1.5rem;
       border-radius: 8px;
       font-weight: 750;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 10px 30px var(--shadow-color);
       z-index: 2000;
       animation: slideUp 0.3s ease;
     }
