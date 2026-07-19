@@ -1,11 +1,13 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { SearchService, SearchFilters } from '../../../core/services/search.service';
 import { FavoritesService } from '../../../core/services/favorites.service';
 import { AlertsService } from '../../../core/services/alerts.service';
 import { AuthService } from '../../../core/auth/auth.service';
+
+declare const L: any;
 
 @Component({
   selector: 'app-listing-search',
@@ -124,8 +126,8 @@ import { AuthService } from '../../../core/auth/auth.service';
         <div class="results-header">
           <h2>Available Listings ({{ listings().length }})</h2>
           <div class="view-toggle">
-            <button [class.active]="viewMode() === 'list'" (click)="viewMode.set('list')">Grid View</button>
-            <button [class.active]="viewMode() === 'map'" (click)="viewMode.set('map')">Map View</button>
+            <button [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Grid View</button>
+            <button [class.active]="viewMode() === 'map'" (click)="setViewMode('map')">Map View</button>
           </div>
         </div>
 
@@ -135,87 +137,60 @@ import { AuthService } from '../../../core/auth/auth.service';
           </div>
         }
 
-        @if (viewMode() === 'list') {
-          <div class="listings-grid">
-            @for (item of listings(); track item.id) {
-              <div class="listing-card">
-                <div class="card-image-placeholder">
-                  <span class="category-label">{{ item.category | uppercase }}</span>
-                  <span class="rent-label">₹{{ item.rentAmount }}</span>
-                  @if (authService.isAuthenticated() && authService.userRole() === 'visitor') {
-                    <button
-                      (click)="toggleFavorite(item.id!, $event)"
-                      class="favorite-badge"
-                      [class.favorited]="isFavorited(item.id!)"
-                    >
-                      ♥
-                    </button>
-                  }
-                </div>
-                <div class="card-details">
-                  <h4>{{ item.title }}</h4>
-                  <p class="address">{{ item.addressText }}</p>
-                  <div class="specs">
-                    <span *ngIf="item.wifi">WiFi</span>
-                    <span *ngIf="item.parking">Parking</span>
-                    <span *ngIf="item.foodIncluded">Food</span>
-                    <span *ngIf="item.ac === 'ac'">AC</span>
-                  </div>
-                  <a [routerLink]="['/listings', item.id]" class="view-btn">View Details</a>
-                </div>
+        <!-- Listings Grid View (using hidden for smooth maps toggle) -->
+        <div [style.display]="viewMode() === 'list' ? 'grid' : 'none'" class="listings-grid">
+          @for (item of listings(); track item.id) {
+            <div class="listing-card">
+              <div class="card-image-placeholder" [style.background-image]="item.media && item.media.length > 0 ? 'linear-gradient(180deg, rgba(18, 18, 24, 0.1) 0%, rgba(18, 18, 24, 0.8) 100%), url(' + item.media[0].url + ')' : ''">
+                <span class="category-label">{{ item.category | uppercase }}</span>
+                <span class="rent-label">₹{{ item.rentAmount }}</span>
+                @if (authService.isAuthenticated() && authService.userRole() === 'visitor') {
+                  <button
+                    (click)="toggleFavorite(item.id!, $event)"
+                    class="favorite-badge"
+                    [class.favorited]="isFavorited(item.id!)"
+                  >
+                    ♥
+                  </button>
+                }
               </div>
-            } @empty {
-              <div class="empty-state">
-                <p>No listings match your search filters.</p>
-              </div>
-            }
-          </div>
-        } @else {
-          <!-- Interactive Map View -->
-          <div class="map-view-wrapper">
-            <div class="map-toolbar">
-              <span class="location-status">
-                📍 Center: <strong>{{ getCentreCoordinatesLabel() }}</strong> ({{ getCentreLabel() }})
-              </span>
-              <div class="toolbar-actions">
-                <button (click)="getUserLocation()" class="toolbar-btn">Use Current Location</button>
-                <button (click)="resetToDefaultCentre()" class="toolbar-btn">Reset to Noida Centre</button>
+              <div class="card-details">
+                <h4>{{ item.title }}</h4>
+                <p class="address">{{ item.addressText }}</p>
+                <div class="specs">
+                  <span *ngIf="item.wifi">WiFi</span>
+                  <span *ngIf="item.parking">Parking</span>
+                  <span *ngIf="item.foodIncluded">Food</span>
+                  <span *ngIf="item.ac === 'ac'">AC</span>
+                </div>
+                <a [routerLink]="['/listings', item.id]" class="view-btn">View Details</a>
               </div>
             </div>
-
-            <div class="noida-map" (click)="onMapClick($event)">
-              <div class="map-grid">
-                <div class="grid-line horizontal"></div>
-                <div class="grid-line vertical"></div>
-              </div>
-              
-              <!-- Visual Dashed Radius Circle overlay -->
-              <div class="radius-circle" [style.width.%]="getRadiusCircleDiameter()" [style.height.%]="getRadiusCircleDiameter()"></div>
-
-              <span class="centre-pin">{{ getCentreLabel() }}</span>
-              
-              @for (item of listings(); track item.id) {
-                <div
-                  class="map-pin"
-                  [style.top.%]="getMapTopPercent(item.latitude)"
-                  [style.left.%]="getMapLeftPercent(item.longitude)"
-                  [routerLink]="['/listings', item.id]"
-                  (click)="$event.stopPropagation()"
-                >
-                  <div class="pin-pulse"></div>
-                  <div class="pin-dot"></div>
-                  <div class="pin-tooltip">
-                    <strong>{{ item.title }}</strong>
-                    <span>₹{{ item.rentAmount }}</span>
-                  </div>
-                </div>
-              }
+          } @empty {
+            <div class="empty-state">
+              <p>No listings match your search filters.</p>
             </div>
-            <div class="map-legend">
-              <p>Click anywhere on the map grid to set a new custom search center. The dashed boundary outlines the selected {{ filters.radiusKm }} Km search radius.</p>
+          }
+        </div>
+
+        <!-- Interactive Noida Map View -->
+        <div [style.display]="viewMode() === 'map' ? 'flex' : 'none'" class="map-view-wrapper">
+          <div class="map-toolbar">
+            <span class="location-status">
+              📍 Center: <strong>{{ getCentreCoordinatesLabel() }}</strong> ({{ getCentreLabel() }})
+            </span>
+            <div class="toolbar-actions">
+              <button (click)="getUserLocation()" class="toolbar-btn">Use Current Location</button>
+              <button (click)="resetToDefaultCentre()" class="toolbar-btn">Reset to Noida Centre</button>
             </div>
           </div>
-        }
+
+          <div id="leaflet-map"></div>
+
+          <div class="map-legend">
+            <p>Click anywhere on the map to set a new custom search center. The dashed boundary outlines the search radius.</p>
+          </div>
+        </div>
       </main>
     </div>
   `,
@@ -417,6 +392,8 @@ import { AuthService } from '../../../core/auth/auth.service';
     .card-image-placeholder {
       height: 160px;
       background: linear-gradient(135deg, #1e1e30 0%, #151522 100%);
+      background-size: cover;
+      background-position: center;
       position: relative;
     }
     .category-label {
@@ -544,6 +521,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       font-size: 0.8rem;
       flex-wrap: wrap;
       gap: 0.5rem;
+      z-index: 5;
     }
     .location-status {
       color: var(--text-primary);
@@ -572,139 +550,135 @@ import { AuthService } from '../../../core/auth/auth.service';
       color: var(--text-primary);
       border-color: var(--accent-cyan);
     }
-    .noida-map {
+    #leaflet-map {
       flex: 1;
+      width: 100%;
+      z-index: 1;
+      min-height: 400px;
+    }
+    :host ::ng-deep .custom-center-marker {
+      background: transparent;
+      border: none;
+    }
+    :host ::ng-deep .center-pin-wrapper {
       position: relative;
-      background: radial-gradient(circle at center, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
-      overflow: hidden;
-      cursor: crosshair;
-      transition: background 0.4s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
     }
-    .map-grid {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      opacity: 0.05;
-      pointer-events: none;
-    }
-    .grid-line {
-      background: var(--text-primary);
-      position: absolute;
-    }
-    .grid-line.horizontal {
-      width: 100%;
-      height: 1px;
-      top: 50%;
-    }
-    .grid-line.vertical {
-      height: 100%;
-      width: 1px;
-      left: 50%;
-    }
-    .radius-circle {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border: 2px dashed rgba(0, 242, 254, 0.35);
-      background: rgba(0, 242, 254, 0.02);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 5;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .centre-pin {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.3rem 0.8rem;
-      border-radius: 20px;
-      border: 1px solid var(--card-border);
-      pointer-events: none;
-      box-shadow: 0 4px 10px var(--shadow-color);
-      transition: all 0.4s ease;
-      z-index: 6;
-    }
-    .map-pin {
-      position: absolute;
-      cursor: pointer;
-      transform: translate(-50%, -50%);
+    :host ::ng-deep .center-pin-dot {
+      font-size: 1.5rem;
       z-index: 10;
     }
-    .pin-dot {
-      width: 14px;
-      height: 14px;
-      background: var(--accent-cyan);
-      border: 2px solid var(--bg-secondary);
-      border-radius: 50%;
-      box-shadow: 0 2px 6px var(--shadow-color);
-      position: relative;
-      z-index: 2;
-      transition: background 0.4s ease, border-color 0.4s ease;
-    }
-    .pin-pulse {
-      width: 24px;
-      height: 24px;
+    :host ::ng-deep .center-pin-pulse {
+      position: absolute;
+      width: 40px;
+      height: 40px;
       background: rgba(0, 242, 254, 0.4);
       border-radius: 50%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      animation: pulse 2s infinite;
+      animation: center-pulse 2s infinite;
       z-index: 1;
     }
-    @keyframes pulse {
+    @keyframes center-pulse {
       0% {
-        width: 16px;
-        height: 16px;
+        transform: scale(0.5);
         opacity: 0.8;
       }
       100% {
-        width: 44px;
-        height: 44px;
+        transform: scale(1.5);
         opacity: 0;
       }
     }
-    .pin-tooltip {
-      position: absolute;
-      bottom: 130%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg-secondary);
+    :host ::ng-deep .custom-price-marker {
+      background: transparent;
+      border: none;
+    }
+    :host ::ng-deep .price-marker-tag {
+      background: var(--card-bg);
+      border: 1px solid var(--accent-cyan);
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    :host ::ng-deep .price-marker-tag:hover {
+      background: var(--accent-cyan);
+      color: #121218;
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 14px rgba(0, 242, 254, 0.3);
+    }
+    :host ::ng-deep .leaflet-popup-content-wrapper {
+      background: var(--card-bg) !important;
+      color: var(--text-primary) !important;
       border: 1px solid var(--card-border);
-      border-radius: 6px;
-      padding: 0.5rem;
+      border-radius: 12px !important;
+      padding: 0 !important;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+    }
+    :host ::ng-deep .leaflet-popup-content {
+      margin: 0 !important;
+      line-height: inherit !important;
+    }
+    :host ::ng-deep .leaflet-popup-tip {
+      background: var(--card-bg) !important;
+      border: 1px solid var(--card-border);
+    }
+    :host ::ng-deep .map-popup-card {
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.1rem;
-      width: 140px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      box-shadow: 0 5px 15px var(--shadow-color);
-      z-index: 100;
+      gap: 0.5rem;
+      width: 200px;
     }
-    .map-pin:hover .pin-tooltip {
-      opacity: 1;
-    }
-    .pin-tooltip strong {
+    :host ::ng-deep .map-popup-card h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
       color: var(--text-primary);
-      font-size: 0.75rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: color 0.4s ease;
     }
-    .pin-tooltip span {
-      color: var(--accent-cyan);
-      font-size: 0.7rem;
+    :host ::ng-deep .popup-addr {
+      margin: 0;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    :host ::ng-deep .popup-rent {
+      margin: 0;
+      font-size: 0.85rem;
       font-weight: 700;
+      color: var(--accent-cyan);
+    }
+    :host ::ng-deep .popup-btn {
+      background: var(--accent-cyan);
+      color: #121218;
+      border: none;
+      border-radius: 6px;
+      padding: 0.4rem;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-top: 0.3rem;
+      display: block;
+    }
+    :host ::ng-deep .popup-btn:hover {
+      background: #00c6d2;
+      color: #121218;
     }
     .map-legend {
       background: var(--bg-secondary);
@@ -713,6 +687,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       font-size: 0.75rem;
       color: var(--text-secondary);
       transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+      z-index: 5;
     }
     .toast-alert {
       background: rgba(0, 242, 254, 0.1);
@@ -731,11 +706,12 @@ import { AuthService } from '../../../core/auth/auth.service';
     }
   `]
 })
-export class ListingSearchComponent implements OnInit {
+export class ListingSearchComponent implements OnInit, AfterViewInit {
   protected readonly authService = inject(AuthService);
   private readonly searchService = inject(SearchService);
   private readonly favoritesService = inject(FavoritesService);
   private readonly alertsService = inject(AlertsService);
+  private readonly router = inject(Router);
 
   viewMode = signal<'list' | 'map'>('list');
   listings = signal<any[]>([]);
@@ -764,19 +740,162 @@ export class ListingSearchComponent implements OnInit {
     size: 20
   };
 
+  // Leaflet map fields
+  map: any;
+  centerMarker: any;
+  radiusCircle: any;
+  listingMarkers: any[] = [];
+
   ngOnInit(): void {
     this.getUserLocationOnInit();
     this.onFilterChange();
     this.loadFavorites();
   }
 
+  ngAfterViewInit(): void {
+    this.initMap();
+  }
+
+  initMap(): void {
+    if (typeof window === 'undefined' || typeof L === 'undefined') return;
+
+    // Bounding box lock for Noida
+    const noidaBounds = L.latLngBounds([28.40, 77.20], [28.70, 77.55]);
+
+    this.map = L.map('leaflet-map', {
+      center: [this.filters.lat, this.filters.lng],
+      zoom: 13,
+      minZoom: 11,
+      maxZoom: 18,
+      maxBounds: noidaBounds,
+      maxBoundsViscosity: 1.0,
+      zoomControl: true
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.map);
+
+    this.updateCenterMarkerAndCircle();
+    this.updateListingMarkers();
+
+    // Set search center on click inside Noida boundaries
+    this.map.on('click', (e: any) => {
+      if (noidaBounds.contains(e.latlng)) {
+        this.filters.lat = e.latlng.lat;
+        this.filters.lng = e.latlng.lng;
+        this.showToast('Search center shifted to clicked coordinate.');
+        this.onFilterChange();
+      } else {
+        this.showToast('Please select a search center within Noida bounds.');
+      }
+    });
+
+    // Intercept popup view details button click to route via Angular router
+    this.map.on('popupopen', (e: any) => {
+      const popupEl = e.popup.getElement();
+      const btn = popupEl.querySelector('.popup-btn');
+      if (btn) {
+        btn.addEventListener('click', (event: MouseEvent) => {
+          event.preventDefault();
+          const url = btn.getAttribute('href');
+          if (url) {
+            this.router.navigateByUrl(url);
+          }
+        });
+      }
+    });
+  }
+
+  updateCenterMarkerAndCircle(): void {
+    if (!this.map || typeof L === 'undefined') return;
+
+    const centerCoords: [number, number] = [this.filters.lat, this.filters.lng];
+
+    if (this.centerMarker) {
+      this.centerMarker.setLatLng(centerCoords);
+    } else {
+      const centerIcon = L.divIcon({
+        className: 'custom-center-marker',
+        html: `
+          <div class="center-pin-wrapper">
+            <div class="center-pin-pulse"></div>
+            <div class="center-pin-dot">📍</div>
+          </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+      });
+      this.centerMarker = L.marker(centerCoords, { icon: centerIcon, zIndexOffset: 1000 }).addTo(this.map);
+    }
+
+    if (this.radiusCircle) {
+      this.radiusCircle.setLatLng(centerCoords);
+      this.radiusCircle.setRadius((this.filters.radiusKm || 5) * 1000);
+    } else {
+      this.radiusCircle = L.circle(centerCoords, {
+        radius: (this.filters.radiusKm || 5) * 1000,
+        color: '#00f2fe',
+        fillColor: '#00f2fe',
+        fillOpacity: 0.05,
+        weight: 2,
+        dashArray: '5, 5'
+      }).addTo(this.map);
+    }
+  }
+
+  updateListingMarkers(): void {
+    if (!this.map || typeof L === 'undefined') return;
+
+    this.listingMarkers.forEach(m => this.map.removeLayer(m));
+    this.listingMarkers = [];
+
+    const items = this.listings();
+    items.forEach(item => {
+      if (item.latitude && item.longitude) {
+        const priceIcon = L.divIcon({
+          className: 'custom-price-marker',
+          html: `<div class="price-marker-tag">₹${Math.round(item.rentAmount)}</div>`,
+          iconSize: [60, 24],
+          iconAnchor: [30, 12]
+        });
+
+        const marker = L.marker([item.latitude, item.longitude], { icon: priceIcon }).addTo(this.map);
+
+        const popupContent = `
+          <div class="map-popup-card">
+            <h4>${item.title}</h4>
+            <p class="popup-addr">${item.addressText || ''}</p>
+            <p class="popup-rent">₹${item.rentAmount} / month</p>
+            <a href="/listings/${item.id}" class="popup-btn">View Details</a>
+          </div>
+        `;
+        marker.bindPopup(popupContent, { closeButton: false, offset: [0, -10] });
+        this.listingMarkers.push(marker);
+      }
+    });
+  }
+
   getUserLocationOnInit(): void {
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          this.filters.lat = position.coords.latitude;
-          this.filters.lng = position.coords.longitude;
-          this.onFilterChange();
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          if (typeof L !== 'undefined') {
+            const noidaBounds = L.latLngBounds([28.40, 77.20], [28.70, 77.55]);
+            if (noidaBounds.contains([lat, lng])) {
+              this.filters.lat = lat;
+              this.filters.lng = lng;
+              this.onFilterChange();
+              if (this.map) {
+                this.map.setView([lat, lng], 13);
+                this.updateCenterMarkerAndCircle();
+              }
+              return;
+            }
+          }
+          console.warn('Initial geolocation outside Noida, defaulting to Noida Centre.');
         },
         (error) => {
           console.warn('Initial geolocation failed or denied, using defaults.', error);
@@ -791,8 +910,17 @@ export class ListingSearchComponent implements OnInit {
       this.showToast('Acquiring your coordinates...');
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          this.filters.lat = position.coords.latitude;
-          this.filters.lng = position.coords.longitude;
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          if (typeof L !== 'undefined') {
+            const noidaBounds = L.latLngBounds([28.40, 77.20], [28.70, 77.55]);
+            if (!noidaBounds.contains([lat, lng])) {
+              this.showToast('Your location is outside Noida area. Using Noida Centre.');
+              return;
+            }
+          }
+          this.filters.lat = lat;
+          this.filters.lng = lng;
           this.showToast('Search center set to your current location!');
           this.onFilterChange();
         },
@@ -814,32 +942,16 @@ export class ListingSearchComponent implements OnInit {
     this.onFilterChange();
   }
 
-  onMapClick(event: MouseEvent): void {
-    const mapElement = event.currentTarget as HTMLElement;
-    const rect = mapElement.getBoundingClientRect();
-    
-    // Position of click relative to map element
-    const clickX = event.clientX - rect.left;
-    const clickY = event.clientY - rect.top;
-    
-    const percentX = (clickX / rect.width) * 100;
-    const percentY = (clickY / rect.height) * 100;
-
-    // Convert percentages back to latitude/longitude using the inverse equations:
-    // percentY = 50 - latDiff * 400 => latDiff = (50 - percentY) / 400
-    // percentX = 50 + lngDiff * 400 => lngDiff = (percentX - 50) / 400
-    const latDiff = (50 - percentY) / 400;
-    const lngDiff = (percentX - 50) / 400;
-
-    this.filters.lat = this.filters.lat + latDiff;
-    this.filters.lng = this.filters.lng + lngDiff;
-
-    this.showToast('Search center shifted to clicked coordinate.');
-    this.onFilterChange();
-  }
-
-  getRadiusCircleDiameter(): number {
-    return (this.filters.radiusKm || 5) * 7.2;
+  setViewMode(mode: 'list' | 'map'): void {
+    this.viewMode.set(mode);
+    if (mode === 'map' && this.map) {
+      setTimeout(() => {
+        this.map.invalidateSize();
+        this.map.setView([this.filters.lat, this.filters.lng], 13);
+        this.updateCenterMarkerAndCircle();
+        this.updateListingMarkers();
+      }, 50);
+    }
   }
 
   isDefaultCentre(): boolean {
@@ -859,6 +971,11 @@ export class ListingSearchComponent implements OnInit {
     this.searchService.search(this.filters).subscribe({
       next: (res) => {
         this.listings.set(res.items || []);
+        if (this.map) {
+          this.map.panTo([this.filters.lat, this.filters.lng]);
+          this.updateCenterMarkerAndCircle();
+          this.updateListingMarkers();
+        }
       },
       error: (err) => console.error('Search failed', err)
     });
@@ -934,16 +1051,5 @@ export class ListingSearchComponent implements OnInit {
   showToast(msg: string): void {
     this.toastMsg.set(msg);
     setTimeout(() => this.toastMsg.set(''), 3000);
-  }
-
-  // Noida local map positioning helpers (mock mapping coordinates to percentages around active search center)
-  getMapTopPercent(lat: number): number {
-    const latDiff = lat - this.filters.lat;
-    return Math.max(10, Math.min(90, 50 - latDiff * 400));
-  }
-
-  getMapLeftPercent(lng: number): number {
-    const lngDiff = lng - this.filters.lng;
-    return Math.max(10, Math.min(90, 50 + lngDiff * 400));
   }
 }

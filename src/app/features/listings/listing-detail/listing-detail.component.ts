@@ -19,8 +19,8 @@ import { AuthService } from '../../../core/auth/auth.service';
           <!-- Main Content -->
           <div class="content-left">
             <div class="gallery">
-              <!-- Mock visual placeholders for listing media -->
-              <div class="cover-image">
+              <!-- Render listing media if available, fallback to mock gradient -->
+              <div class="cover-image" [style.background-image]="item.media && item.media.length > 0 ? 'linear-gradient(180deg, rgba(18, 18, 24, 0.2) 0%, rgba(18, 18, 24, 0.95) 100%), url(' + item.media[0].url + ')' : ''">
                 <span class="category-badge">{{ item.category | uppercase }}</span>
                 <span class="status-badge" [ngClass]="item.status">
                   {{ item.status === 'available_from' ? 'Available From ' + item.availableFromDate : (item.status | uppercase) }}
@@ -192,6 +192,8 @@ import { AuthService } from '../../../core/auth/auth.service';
       height: 360px;
       border-radius: 12px;
       background: linear-gradient(135deg, #1b1b2a 0%, #121218 100%);
+      background-size: cover;
+      background-position: center;
       position: relative;
       overflow: hidden;
       border: 1px solid rgba(255, 255, 255, 0.08);
