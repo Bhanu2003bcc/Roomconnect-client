@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { SearchService, SearchFilters } from '../../../core/services/search.service';
 import { FavoritesService } from '../../../core/services/favorites.service';
 import { AlertsService } from '../../../core/services/alerts.service';
@@ -21,7 +21,7 @@ import { AuthService } from '../../../core/auth/auth.service';
         </div>
 
         <div class="filter-section">
-          <label for="radius">Radius (Noida Centre)</label>
+          <label for="radius">Radius ({{ getCentreLabel() }})</label>
           <select id="radius" [(ngModel)]="filters.radiusKm" (change)="onFilterChange()" class="select-field">
             <option [value]="2">Within 2 Km</option>
             <option [value]="5">Within 5 Km</option>
@@ -122,7 +122,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       <!-- Main Listing Results Grid -->
       <main class="results-main">
         <div class="results-header">
-          <h2>Available Listings in Noida ({{ listings().length }})</h2>
+          <h2>Available Listings ({{ listings().length }})</h2>
           <div class="view-toggle">
             <button [class.active]="viewMode() === 'list'" (click)="viewMode.set('list')">Grid View</button>
             <button [class.active]="viewMode() === 'map'" (click)="viewMode.set('map')">Map View</button>
@@ -171,14 +171,28 @@ import { AuthService } from '../../../core/auth/auth.service';
             }
           </div>
         } @else {
-          <!-- Interactive Map Mockup -->
+          <!-- Interactive Map View -->
           <div class="map-view-wrapper">
-            <div class="noida-map">
+            <div class="map-toolbar">
+              <span class="location-status">
+                📍 Center: <strong>{{ getCentreCoordinatesLabel() }}</strong> ({{ getCentreLabel() }})
+              </span>
+              <div class="toolbar-actions">
+                <button (click)="getUserLocation()" class="toolbar-btn">Use Current Location</button>
+                <button (click)="resetToDefaultCentre()" class="toolbar-btn">Reset to Noida Centre</button>
+              </div>
+            </div>
+
+            <div class="noida-map" (click)="onMapClick($event)">
               <div class="map-grid">
                 <div class="grid-line horizontal"></div>
                 <div class="grid-line vertical"></div>
               </div>
-              <span class="centre-pin">Noida Centre</span>
+              
+              <!-- Visual Dashed Radius Circle overlay -->
+              <div class="radius-circle" [style.width.%]="getRadiusCircleDiameter()" [style.height.%]="getRadiusCircleDiameter()"></div>
+
+              <span class="centre-pin">{{ getCentreLabel() }}</span>
               
               @for (item of listings(); track item.id) {
                 <div
@@ -186,6 +200,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                   [style.top.%]="getMapTopPercent(item.latitude)"
                   [style.left.%]="getMapLeftPercent(item.longitude)"
                   [routerLink]="['/listings', item.id]"
+                  (click)="$event.stopPropagation()"
                 >
                   <div class="pin-pulse"></div>
                   <div class="pin-dot"></div>
@@ -197,7 +212,7 @@ import { AuthService } from '../../../core/auth/auth.service';
               }
             </div>
             <div class="map-legend">
-              <p>Pins show geographical distribution around Noida Center. Hover/tap pins to preview rooms.</p>
+              <p>Click anywhere on the map grid to set a new custom search center. The dashed boundary outlines the selected {{ filters.radiusKm }} Km search radius.</p>
             </div>
           </div>
         }
@@ -514,16 +529,55 @@ import { AuthService } from '../../../core/auth/auth.service';
       border: 1px solid var(--card-border);
       border-radius: 12px;
       overflow: hidden;
-      height: 480px;
+      height: 520px;
       display: flex;
       flex-direction: column;
       transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    .map-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.6rem 1.2rem;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .location-status {
+      color: var(--text-primary);
+    }
+    .location-status strong {
+      font-family: monospace;
+      color: var(--accent-cyan);
+    }
+    .toolbar-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .toolbar-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .toolbar-btn:hover {
+      background: var(--card-bg-hover);
+      color: var(--text-primary);
+      border-color: var(--accent-cyan);
     }
     .noida-map {
       flex: 1;
       position: relative;
       background: radial-gradient(circle at center, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
       overflow: hidden;
+      cursor: crosshair;
       transition: background 0.4s ease;
     }
     .map-grid {
@@ -547,6 +601,18 @@ import { AuthService } from '../../../core/auth/auth.service';
       width: 1px;
       left: 50%;
     }
+    .radius-circle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 2px dashed rgba(0, 242, 254, 0.35);
+      background: rgba(0, 242, 254, 0.02);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 5;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
     .centre-pin {
       position: absolute;
       top: 50%;
@@ -562,6 +628,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       pointer-events: none;
       box-shadow: 0 4px 10px var(--shadow-color);
       transition: all 0.4s ease;
+      z-index: 6;
     }
     .map-pin {
       position: absolute;
@@ -621,6 +688,7 @@ import { AuthService } from '../../../core/auth/auth.service';
       opacity: 0;
       transition: opacity 0.2s ease;
       box-shadow: 0 5px 15px var(--shadow-color);
+      z-index: 100;
     }
     .map-pin:hover .pin-tooltip {
       opacity: 1;
@@ -697,8 +765,94 @@ export class ListingSearchComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    this.getUserLocationOnInit();
     this.onFilterChange();
     this.loadFavorites();
+  }
+
+  getUserLocationOnInit(): void {
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.filters.lat = position.coords.latitude;
+          this.filters.lng = position.coords.longitude;
+          this.onFilterChange();
+        },
+        (error) => {
+          console.warn('Initial geolocation failed or denied, using defaults.', error);
+        },
+        { enableHighAccuracy: false, timeout: 3000, maximumAge: 600000 }
+      );
+    }
+  }
+
+  getUserLocation(): void {
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      this.showToast('Acquiring your coordinates...');
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.filters.lat = position.coords.latitude;
+          this.filters.lng = position.coords.longitude;
+          this.showToast('Search center set to your current location!');
+          this.onFilterChange();
+        },
+        (error) => {
+          console.warn('Geolocation acquisition failed:', error);
+          this.showToast('Could not acquire location. Please verify browser permissions.');
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      this.showToast('Geolocation is not supported by your browser.');
+    }
+  }
+
+  resetToDefaultCentre(): void {
+    this.filters.lat = this.noidaLat;
+    this.filters.lng = this.noidaLng;
+    this.showToast('Search center reset to Noida Centre.');
+    this.onFilterChange();
+  }
+
+  onMapClick(event: MouseEvent): void {
+    const mapElement = event.currentTarget as HTMLElement;
+    const rect = mapElement.getBoundingClientRect();
+    
+    // Position of click relative to map element
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+    
+    const percentX = (clickX / rect.width) * 100;
+    const percentY = (clickY / rect.height) * 100;
+
+    // Convert percentages back to latitude/longitude using the inverse equations:
+    // percentY = 50 - latDiff * 400 => latDiff = (50 - percentY) / 400
+    // percentX = 50 + lngDiff * 400 => lngDiff = (percentX - 50) / 400
+    const latDiff = (50 - percentY) / 400;
+    const lngDiff = (percentX - 50) / 400;
+
+    this.filters.lat = this.filters.lat + latDiff;
+    this.filters.lng = this.filters.lng + lngDiff;
+
+    this.showToast('Search center shifted to clicked coordinate.');
+    this.onFilterChange();
+  }
+
+  getRadiusCircleDiameter(): number {
+    return (this.filters.radiusKm || 5) * 7.2;
+  }
+
+  isDefaultCentre(): boolean {
+    return Math.abs(this.filters.lat - this.noidaLat) < 0.0005 &&
+           Math.abs(this.filters.lng - this.noidaLng) < 0.0005;
+  }
+
+  getCentreLabel(): string {
+    return this.isDefaultCentre() ? 'Noida Centre' : 'Custom Centre';
+  }
+
+  getCentreCoordinatesLabel(): string {
+    return `${this.filters.lat.toFixed(4)}, ${this.filters.lng.toFixed(4)}`;
   }
 
   onFilterChange(): void {
@@ -782,14 +936,14 @@ export class ListingSearchComponent implements OnInit {
     setTimeout(() => this.toastMsg.set(''), 3000);
   }
 
-  // Noida local map positioning helpers (mock mapping coordinates to percentages around center Sector 62)
+  // Noida local map positioning helpers (mock mapping coordinates to percentages around active search center)
   getMapTopPercent(lat: number): number {
-    const latDiff = lat - this.noidaLat;
+    const latDiff = lat - this.filters.lat;
     return Math.max(10, Math.min(90, 50 - latDiff * 400));
   }
 
   getMapLeftPercent(lng: number): number {
-    const lngDiff = lng - this.noidaLng;
+    const lngDiff = lng - this.filters.lng;
     return Math.max(10, Math.min(90, 50 + lngDiff * 400));
   }
 }
