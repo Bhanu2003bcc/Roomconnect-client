@@ -32,4 +32,20 @@ export class AdminService {
   getAuditLogs(page = 0, size = 20): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/audit-logs`, { params: { page, size } });
   }
+
+  getUsers(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/users`);
+  }
+
+  createUser(user: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users`, user);
+  }
+
+  deleteUser(userId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/users/${userId}`);
+  }
+
+  getAllListings(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/listings`);
+  }
 }
