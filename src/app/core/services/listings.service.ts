@@ -69,16 +69,16 @@ export class ListingsService {
    * 3. Confirm upload on backend
    */
   uploadListingImage(listingId: string, file: File): Observable<any> {
+    const mimeType = file.type || 'image/jpeg';
     return this.http.post<any>(`${this.apiUrl}/${listingId}/media/presign`, null, {
-      params: { mimeType: file.type, sizeBytes: file.size }
+      params: { mimeType, sizeBytes: file.size }
     }).pipe(
       switchMap(res => {
         const uploadUrl = res.uploadUrl;
         const mediaId = res.mediaId;
 
-        // Custom headers for direct S3 upload
         const headers = new HttpHeaders({
-          'Content-Type': file.type
+          'Content-Type': mimeType
         });
 
         return this.http.put(uploadUrl, file, { headers }).pipe(
