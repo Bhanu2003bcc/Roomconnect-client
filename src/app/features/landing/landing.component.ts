@@ -12,6 +12,7 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { StatsService } from '../../core/services/stats.service';
 
 @Component({
   selector: 'app-landing',
@@ -1156,6 +1157,7 @@ import { RouterModule } from '@angular/router';
 })
 export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private statsService = inject(StatsService);
 
   @ViewChild('statsSection') statsSection!: ElementRef;
 
@@ -1164,10 +1166,10 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private observer?: IntersectionObserver;
 
   stats = [
-    { label: 'Rooms Listed',      target: 500,  display: '0+' },
-    { label: 'Verified Owners',   target: 200,  display: '0+' },
-    { label: 'Happy Tenants',     target: 1200, display: '0+' },
-    { label: 'Avg. Days to Move', target: 3,    display: '0' },
+    { label: 'Rooms Listed',      target: 0, display: '0+' },
+    { label: 'Verified Owners',   target: 0, display: '0+' },
+    { label: 'Happy Tenants',     target: 0, display: '0+' },
+    { label: 'Avg. Days to Move', target: 3, display: '0' },
   ];
 
   steps = [
@@ -1226,7 +1228,23 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.generateParticles();
+      this.loadLiveStats();
     }
+  }
+
+  loadLiveStats(): void {
+    this.statsService.getStats().subscribe({
+      next: (res) => {
+        this.stats[0].target = res.roomsListed;
+        this.stats[1].target = res.verifiedOwners;
+        this.stats[2].target = res.happyTenants;
+        this.stats[3].target = res.avgDaysToMove;
+        if (this.statsAnimated) {
+          this.updateDisplayedStats();
+        }
+      },
+      error: (err) => console.error('Failed to load real-time platform stats', err)
+    });
   }
 
   ngAfterViewInit(): void {
@@ -1275,7 +1293,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.stats.forEach((stat, i) => {
       let current = 0;
-      const increment = stat.target / steps;
+      const increment = (stat.target || 1) / steps;
       const timer = setInterval(() => {
         current = Math.min(current + increment, stat.target);
         const val = Math.round(current);
@@ -1283,7 +1301,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
           ...stat,
           display: i < 3 ? val + '+' : val + ' days',
         };
-        // Copy array reference to force Angular CD rendering
         this.stats = [...this.stats];
 
         if (current >= stat.target) {
@@ -1297,22 +1314,17 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  updateDisplayedStats(): void {
+    this.stats = this.stats.map((stat, i) => ({
+      ...stat,
+      display: i < 3 ? stat.target + '+' : stat.target + ' days'
+    }));
+  }
+
   startRealTimeStatsUpdates(): void {
-    // Increment stats every 7-10 seconds to simulate real-time growth
+    // Poll real backend stats every 15 seconds to reflect live database updates
     this.realTimeTimer = setInterval(() => {
-      this.stats = this.stats.map((stat, i) => {
-        if (i === 3) return stat; // Do not increment days to move
-        
-        // Randomly increment by 1 or 2
-        const increment = Math.floor(Math.random() * 2) + 1;
-        const newTarget = stat.target + increment;
-        
-        return {
-          ...stat,
-          target: newTarget,
-          display: newTarget + '+'
-        };
-      });
-    }, 8500);
+      this.loadLiveStats();
+    }, 15000);
   }
 }
