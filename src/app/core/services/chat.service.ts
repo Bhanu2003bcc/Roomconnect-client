@@ -105,24 +105,12 @@ export class ChatService {
     return subId;
   }
 
-  sendChatMessage(conversationId: string, body: string): void {
-    if (!this.connected || !this.ws) {
-      console.error('Cannot send message, WebSocket not connected');
-      return;
-    }
+  sendMessageHttp(conversationId: string, body: string): Observable<Message> {
+    return this.http.post<Message>(`${this.apiUrl}/conversations/${conversationId}/messages`, { body });
+  }
 
-    const payload = JSON.stringify({ conversationId, body });
-    const sendFrame = [
-      'SEND',
-      'destination:/app/chat/send',
-      'content-type:application/json',
-      'content-length:' + payload.length,
-      '',
-      payload,
-      '\0'
-    ].join('\n');
-
-    this.ws.send(sendFrame);
+  sendChatMessage(conversationId: string, body: string): Observable<Message> {
+    return this.sendMessageHttp(conversationId, body);
   }
 
   private sendSubscribeFrame(topic: string, subId: string): void {

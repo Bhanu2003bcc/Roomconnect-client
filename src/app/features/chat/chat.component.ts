@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ChatService, Conversation, Message } from '../../core/services/chat.service';
 import { AuthService } from '../../core/auth/auth.service';
 
@@ -24,7 +25,7 @@ import { AuthService } from '../../core/auth/auth.service';
                 <div class="avatar">💬</div>
                 <div class="info">
                   <span class="title">{{ c.listingTitle || 'Noida Room Chat' }}</span>
-                  <span class="preview">Owner: {{ c.ownerId.slice(0, 8) }}...</span>
+                  <span class="preview">{{ c.ownerId === currentUserId ? 'Visitor Inquiry' : 'Owner: ' + c.ownerId.slice(0, 8) + '...' }}</span>
                 </div>
               </div>
             } @empty {
@@ -38,8 +39,8 @@ import { AuthService } from '../../core/auth/auth.service';
           @if (selectedConversation(); as activeConv) {
             <div class="chat-header">
               <div class="title-bar">
-                <h4>{{ activeConv.listingTitle }}</h4>
-                <p>📍 {{ activeConv.listingAddress }} • ₹{{ activeConv.listingRent }} / month</p>
+                <h4>{{ activeConv.listingTitle || 'Room Inquiry' }}</h4>
+                <p>📍 {{ activeConv.listingAddress || 'Noida' }}{{ activeConv.listingRent ? ' • ₹' + activeConv.listingRent + ' / month' : '' }}</p>
               </div>
             </div>
 
@@ -308,6 +309,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class ChatComponent implements OnInit, OnDestroy {
   private readonly chatService = inject(ChatService);
   private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
 
   conversations = signal<Conversation[]>([]);
   messages = signal<Message[]>([]);
@@ -316,16 +318,20 @@ export class ChatComponent implements OnInit, OnDestroy {
   msgBody = '';
 
   private stompSubId: string | null = null;
+  private targetConvId: string | null = null;
 
   ngOnInit(): void {
     const user = this.authService.currentUser();
     if (user) {
       this.currentUserId = user.id;
-      this.loadConversations();
+
+      this.route.queryParams.subscribe(params => {
+        this.targetConvId = params['id'] || params['conversationId'] || null;
+        this.loadConversations();
+      });
 
       const token = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
       if (token) {
-        // Connect STOMP WebSocket
         this.chatService.connectWebSocket(token, () => {
           console.log('STOMP connected client setup.');
         });
@@ -333,17 +339,27 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    // Unsubscribe STOMP listener if active
-    if (this.stompSubId) {
-      // In advanced setup, we would clean up WS connection or subscription channel,
-      // which our STOMP parser supports.
-    }
-  }
+  ngOnDestroy(): void {}
 
   loadConversations(): void {
     this.chatService.getConversations().subscribe({
-      next: (res) => this.conversations.set(res),
+      next: (res) => {
+        this.conversations.set(res);
+
+        if (res && res.length > 0) {
+          if (this.targetConvId) {
+            const match = res.find(c => c.id === this.targetConvId);
+            if (match) {
+              this.selectConversation(match);
+              return;
+            }
+          }
+          // Auto select first conversation if none is selected
+          if (!this.selectedConversation()) {
+            this.selectConversation(res[0]);
+          }
+        }
+      },
       error: (err) => console.error('Failed to load conversations', err)
     });
   }
@@ -352,13 +368,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.selectedConversation.set(conv);
     this.loadMessages(conv.id);
 
-    // Subscribe to STOMP WebSocket topic for this conversation
     const topic = '/topic/conversation/' + conv.id;
     this.stompSubId = this.chatService.subscribeTopic(topic, (msg: Message) => {
-      // Append real-time message to active message list
       if (this.selectedConversation()?.id === msg.conversationId) {
-        this.messages.update(msgs => [...msgs, msg]);
-        // Auto scroll to bottom
+        this.messages.update(msgs => {
+          if (msg.id && msgs.some(m => m.id === msg.id)) {
+            return msgs;
+          }
+          return [...msgs, msg];
+        });
         setTimeout(() => this.scrollToBottom(), 50);
       }
     });
@@ -367,7 +385,6 @@ export class ChatComponent implements OnInit, OnDestroy {
   loadMessages(convId: string): void {
     this.chatService.getMessages(convId, 0, 100).subscribe({
       next: (res) => {
-        // Paged results sorted desc by date; reverse to show chronologically
         const content = res.content || [];
         this.messages.set([...content].reverse());
         setTimeout(() => this.scrollToBottom(), 50);
@@ -378,11 +395,22 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   sendMessage(): void {
     const conv = this.selectedConversation();
-    if (!conv || !this.msgBody.trim()) return;
+    const text = this.msgBody.trim();
+    if (!conv || !text) return;
 
-    // Send via STOMP WebSocket
-    this.chatService.sendChatMessage(conv.id, this.msgBody.trim());
     this.msgBody = '';
+    this.chatService.sendChatMessage(conv.id, text).subscribe({
+      next: (savedMsg) => {
+        this.messages.update(msgs => {
+          if (savedMsg.id && msgs.some(m => m.id === savedMsg.id)) {
+            return msgs;
+          }
+          return [...msgs, savedMsg];
+        });
+        setTimeout(() => this.scrollToBottom(), 50);
+      },
+      error: (err) => console.error('Failed to send message:', err)
+    });
   }
 
   scrollToBottom(): void {

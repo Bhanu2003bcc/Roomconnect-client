@@ -109,7 +109,10 @@ import { AuthService } from '../../../core/auth/auth.service';
               </div>
 
               @if (authService.isAuthenticated()) {
-                @if (authService.userRole() === 'visitor') {
+                @if (authService.currentUser()?.id === item.ownerId) {
+                  <p class="role-message">You are the owner of this property listing.</p>
+                  <a [routerLink]="['/owner/dashboard']" class="chat-btn text-center" style="display: block; text-decoration: none;">Manage Listing</a>
+                } @else if (authService.userRole() === 'visitor') {
                   <button (click)="chatWithOwner()" [disabled]="chatLoading()" class="chat-btn">
                     💬 Chat with Owner
                   </button>
@@ -148,7 +151,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                     </button>
                   </form>
                 } @else if (authService.userRole() === 'owner') {
-                  <p class="role-message">You are listing this property as the Owner.</p>
+                  <p class="role-message">You are logged in as an Owner profile.</p>
                   <a [routerLink]="['/owner/dashboard']" class="chat-btn text-center" style="display: block; text-decoration: none;">Manage Dashboard</a>
                 }
               } @else {
@@ -522,11 +525,12 @@ export class ListingDetailComponent implements OnInit {
     this.chatService.startConversation(id).subscribe({
       next: (res) => {
         this.chatLoading.set(false);
-        this.router.navigate(['/chat']);
+        this.router.navigate(['/chat'], { queryParams: { id: res.id } });
       },
       error: (err) => {
         console.error('Failed to start chat', err);
-        this.showToast('Failed to connect to owner.', true);
+        const msg = err?.error?.message || (err?.status === 401 ? 'Please sign in to chat with the owner.' : 'Failed to connect to owner.');
+        this.showToast(msg, true);
         this.chatLoading.set(false);
       }
     });

@@ -31,9 +31,23 @@ import { RouterModule } from '@angular/router';
               &amp; rooms — connect directly with owners. No agents, no fees.
             </p>
             <div class="social-links">
-              <a href="#" class="social-btn" aria-label="Twitter">𝕏</a>
-              <a href="#" class="social-btn" aria-label="Instagram">📸</a>
-              <a href="#" class="social-btn" aria-label="LinkedIn">💼</a>
+              <a href="https://x.com/slxionsure" class="social-btn" aria-label="X (Twitter)" target="_blank" rel="noopener noreferrer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </a>
+              <a href="https://www.instagram.com/x__faxtor/" class="social-btn" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+              </a>
+              <a href="https://www.linkedin.com/in/bpsingh7507/" class="social-btn" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.762-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+              </a>
             </div>
           </div>
 
@@ -63,10 +77,10 @@ import { RouterModule } from '@angular/router';
           <div class="footer-col">
             <h4 class="col-heading">Legal</h4>
             <ul>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Terms of Service</a></li>
-              <li><a href="#">DPDP Compliance</a></li>
-              <li><a href="#">Cookie Policy</a></li>
+              <li><a routerLink="/privacy">Privacy Policy</a></li>
+              <li><a routerLink="/terms">Terms of Service</a></li>
+              <li><a routerLink="/dpdp">DPDP Compliance</a></li>
+              <li><a routerLink="/cookies">Cookie Policy</a></li>
             </ul>
           </div>
         </div>
@@ -83,11 +97,11 @@ import { RouterModule } from '@angular/router';
 
         <!-- Bottom bar -->
         <div class="footer-bottom">
-          <span class="copyright">© 2026 Rent2Live. All rights reserved. Built with ❤️ in Noida, India.</span>
+          <span class="copyright">© 2026 Rent2Live. All rights reserved.</span>
           <div class="bottom-links">
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Contact</a>
+            <a routerLink="/privacy">Privacy</a>
+            <a routerLink="/terms">Terms</a>
+            <a routerLink="/contact">Contact</a>
           </div>
         </div>
       </div>
