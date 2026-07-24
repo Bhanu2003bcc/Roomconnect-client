@@ -1066,15 +1066,42 @@ export class DashboardComponent implements OnInit {
     const files = event.target.files;
     if (files && files.length > 0) {
       const file = files[0];
-      this.showToast('Uploading photo to MinIO storage...');
+
+      // Client-side file size check (10MB maximum)
+      const maxSizeBytes = 10 * 1024 * 1024;
+      if (file.size > maxSizeBytes) {
+        this.showToast('File size exceeds the 10MB limit.', true);
+        return;
+      }
+
+      // Client-side MIME type check
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        this.showToast('Invalid image format. Please select JPG, PNG, WEBP, or GIF.', true);
+        return;
+      }
+
+      this.showToast('Uploading photo to storage...');
       this.listingsService.uploadListingImage(listingId, file).subscribe({
         next: () => {
           this.showToast('Photo uploaded successfully!');
           this.loadData();
         },
         error: (err) => {
-          console.error(err);
-          this.showToast('Media upload failed. Bucket configurations missing or incorrect.');
+          console.error('Image upload error:', err);
+          let msg = 'Media upload failed.';
+
+          if (err?.status === 0 || (err?.name === 'HttpErrorResponse' && err?.status === 0)) {
+            msg = 'Upload failed due to CORS or network error reaching storage bucket.';
+          } else if (err?.error?.message) {
+            msg = err.error.message;
+          } else if (typeof err?.error === 'string' && err.error.length > 0 && err.error.length < 200) {
+            msg = err.error;
+          } else if (err?.message) {
+            msg = err.message;
+          }
+
+          this.showToast(msg, true);
         }
       });
     }

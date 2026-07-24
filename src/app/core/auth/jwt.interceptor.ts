@@ -2,12 +2,17 @@ import { HttpInterceptorFn } from '@angular/common/http';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   // Only skip Authorization for genuine presigned S3/R2 upload URLs.
-  // These contain 'X-Amz-Signature' as a query parameter in the URL.
+  // These contain signature query params or point to external storage endpoints.
   // We must NOT skip for our own backend API URLs — even though apiInterceptor
   // rewrites them to absolute https:// URLs before this interceptor runs.
-  const isPresignedS3Url = req.url.includes('X-Amz-Signature');
+  const isPresignedS3Url = req.url.includes('X-Amz-Signature') ||
+                           req.url.includes('AWSAccessKeyId') ||
+                           req.url.includes('Signature');
 
-  if (isPresignedS3Url) {
+  const isExternalStorageUrl = (req.url.startsWith('http://') || req.url.startsWith('https://')) &&
+                               !req.url.includes('/api/');
+
+  if (isPresignedS3Url || isExternalStorageUrl) {
     return next(req);
   }
 
