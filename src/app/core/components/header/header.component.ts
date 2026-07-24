@@ -13,7 +13,7 @@ import { AuthService } from '../../auth/auth.service';
       <div class="container">
 
         <!-- Logo -->
-        <a routerLink="/" class="logo" id="logo-home-link">
+        <a routerLink="/" (click)="closeMobileMenu()" class="logo" id="logo-home-link">
           <svg class="logo-icon" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 3L26 12V26H18V18H10V26H2V12L14 3Z" fill="url(#logoGrad)" stroke="url(#logoStroke)" stroke-width="1.2" stroke-linejoin="round"/>
             <circle cx="14" cy="13.5" r="2.5" fill="white" opacity="0.9"/>
@@ -31,8 +31,8 @@ import { AuthService } from '../../auth/auth.service';
           <span class="logo-text">Rent<span class="logo-accent">2</span>Live</span>
         </a>
 
-        <!-- Nav Links -->
-        <nav class="nav-links" role="navigation">
+        <!-- Desktop Nav Links -->
+        <nav class="nav-links desktop-nav" role="navigation">
           <a routerLink="/search" routerLinkActive="active" class="nav-item" id="nav-explore-link">Explore</a>
 
           @if (authService.isAuthenticated()) {
@@ -77,7 +77,123 @@ import { AuthService } from '../../auth/auth.service';
             </span>
           </button>
         </nav>
+
+        <!-- Mobile Controls (Theme Toggle + Hamburger) -->
+        <div class="mobile-controls">
+          <button
+            class="theme-toggle mobile-theme-btn"
+            [class.dark]="isDark()"
+            [class.light]="!isDark()"
+            (click)="toggleTheme()"
+            id="mobile-theme-toggle-btn"
+            [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+          >
+            <span class="toggle-track">
+              <span class="toggle-icon sun-icon" aria-hidden="true">☀️</span>
+              <span class="toggle-thumb"></span>
+              <span class="toggle-icon moon-icon" aria-hidden="true">🌙</span>
+            </span>
+          </button>
+
+          <button
+            class="hamburger-btn"
+            (click)="toggleMobileMenu()"
+            id="mobile-menu-toggle-btn"
+            [attr.aria-expanded]="isMobileMenuOpen()"
+            aria-label="Toggle navigation menu"
+          >
+            <div class="hamburger-icon" [class.open]="isMobileMenuOpen()">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </button>
+        </div>
+
       </div>
+
+      <!-- ── MOBILE MENU DRAWER ── -->
+      @if (isMobileMenuOpen()) {
+        <div class="mobile-backdrop" (click)="closeMobileMenu()"></div>
+        <div class="mobile-drawer" [class.light]="!isDark()" id="mobile-menu-drawer">
+          <nav class="mobile-nav-links">
+            <a
+              routerLink="/search"
+              routerLinkActive="active"
+              (click)="closeMobileMenu()"
+              class="mobile-nav-item"
+              id="mobile-nav-explore-link"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span>Explore</span>
+            </a>
+
+            @if (authService.isAuthenticated()) {
+              @if (authService.userRole() === 'visitor') {
+                <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMobileMenu()" class="mobile-nav-item" id="mobile-nav-favorites-link">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                  <span>My Favorites</span>
+                </a>
+                <a routerLink="/chat" routerLinkActive="active" (click)="closeMobileMenu()" class="mobile-nav-item" id="mobile-nav-messages-link">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  <span>Messages</span>
+                </a>
+              }
+              @if (authService.userRole() === 'owner') {
+                <a routerLink="/owner/dashboard" routerLinkActive="active" (click)="closeMobileMenu()" class="mobile-nav-item" id="mobile-nav-properties-link">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                  <span>My Properties</span>
+                </a>
+                <a routerLink="/chat" routerLinkActive="active" (click)="closeMobileMenu()" class="mobile-nav-item" id="mobile-nav-owner-messages-link">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  <span>Messages</span>
+                </a>
+              }
+              @if (authService.userRole() === 'admin') {
+                <a routerLink="/admin" routerLinkActive="active" (click)="closeMobileMenu()" class="mobile-nav-item admin-badge" id="mobile-nav-admin-link">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                  <span>Admin Panel</span>
+                </a>
+              }
+
+              <div class="mobile-user-card">
+                <div class="mobile-user-info">
+                  <span class="phone">{{ authService.currentUser()?.phone }}</span>
+                  <span class="role-badge" [ngClass]="authService.userRole()">
+                    {{ authService.userRole() | uppercase }}
+                  </span>
+                </div>
+                <button (click)="logout()" class="mobile-logout-btn" id="mobile-logout-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            } @else {
+              <div class="mobile-auth-actions">
+                <a
+                  routerLink="/login"
+                  (click)="closeMobileMenu()"
+                  class="mobile-nav-item mobile-login-item"
+                  id="mobile-nav-login-link"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                  <span>Sign In</span>
+                </a>
+
+                <a
+                  routerLink="/signup"
+                  (click)="closeMobileMenu()"
+                  class="signup-btn mobile-signup-btn"
+                  id="mobile-nav-signup-link"
+                >
+                  <span>Get Started</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+              </div>
+            }
+          </nav>
+        </div>
+      }
     </header>
   `,
   styles: [`
@@ -131,12 +247,11 @@ import { AuthService } from '../../auth/auth.service';
       background-clip: text;
     }
 
-    /* ─── NAV LINKS ──────────────────────────────────────────── */
+    /* ─── NAV LINKS (DESKTOP) ────────────────────────────────── */
     .nav-links {
       display: flex;
       align-items: center;
       gap: 1.2rem;
-      flex-wrap: wrap;
     }
     .nav-item {
       color: var(--text-secondary);
@@ -228,6 +343,10 @@ import { AuthService } from '../../auth/auth.service';
       box-shadow: 0 4px 16px rgba(0,242,254,0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
     }
     .signup-btn:hover {
       transform: translateY(-1px);
@@ -255,17 +374,17 @@ import { AuthService } from '../../auth/auth.service';
       border-radius: 20px;
       padding: 0 6px;
       gap: 0;
-      transition: background 0.4s ease, box-shadow 0.4s ease;
+      transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.2s ease;
       justify-content: space-between;
     }
 
-    /* DARK state → track is dark, thumb on right (moon side) */
+    /* DARK state */
     .theme-toggle.dark .toggle-track {
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       border: 1px solid rgba(255,255,255,0.12);
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 0 12px rgba(0,242,254,0.15);
     }
-    /* LIGHT state → track is light, thumb on left (sun side) */
+    /* LIGHT state */
     .theme-toggle.light .toggle-track {
       background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
       border: 1px solid rgba(0,0,0,0.1);
@@ -282,7 +401,6 @@ import { AuthService } from '../../auth/auth.service';
     .sun-icon  { order: 1; }
     .moon-icon { order: 3; }
 
-    /* Show/hide icons based on mode */
     .theme-toggle.dark  .sun-icon  { opacity: 0.3; transform: scale(0.8); }
     .theme-toggle.dark  .moon-icon { opacity: 1;   transform: scale(1.1); }
     .theme-toggle.light .sun-icon  { opacity: 1;   transform: scale(1.1); }
@@ -299,31 +417,209 @@ import { AuthService } from '../../auth/auth.service';
       transition: left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.35s ease, box-shadow 0.35s ease;
     }
 
-    /* Dark → thumb is on the right (moon side) */
     .theme-toggle.dark .toggle-thumb {
       left: calc(100% - 30px);
       background: linear-gradient(135deg, #00f2fe, #4facfe);
       box-shadow: 0 2px 8px rgba(0,242,254,0.5), 0 0 0 2px rgba(0,242,254,0.2);
     }
-    /* Light → thumb is on the left (sun side) */
     .theme-toggle.light .toggle-thumb {
       left: 6px;
       background: linear-gradient(135deg, #ffb800, #f59e0b);
       box-shadow: 0 2px 8px rgba(255,184,0,0.5), 0 0 0 2px rgba(255,184,0,0.2);
     }
 
-    /* Hover ripple */
     .theme-toggle:hover .toggle-track {
       transform: scale(1.04);
     }
-    .toggle-track {
-      transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.2s ease;
-    }
 
-    /* Focus ring for accessibility */
     .theme-toggle:focus-visible .toggle-track {
       outline: 2px solid var(--accent-cyan);
       outline-offset: 3px;
+    }
+
+    /* ─── MOBILE CONTROLS & HAMBURGER ───────────────────────── */
+    .mobile-controls {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hamburger-btn {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.45rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .hamburger-btn:hover {
+      background: var(--card-bg-hover);
+      border-color: var(--card-border-hover);
+    }
+
+    .hamburger-icon {
+      width: 22px;
+      height: 16px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hamburger-icon span {
+      display: block;
+      height: 2px;
+      width: 100%;
+      background: var(--text-primary);
+      border-radius: 2px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+      transform-origin: center;
+    }
+
+    .hamburger-icon.open span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+    .hamburger-icon.open span:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger-icon.open span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    /* ─── MOBILE BACKDROP & DRAWER ────────────────────────────── */
+    .mobile-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 998;
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    .mobile-drawer {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--card-border);
+      box-shadow: 0 16px 40px var(--shadow-color);
+      z-index: 999;
+      padding: 1.25rem 1.5rem;
+      animation: slideDownFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .mobile-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      transition: all 0.2s ease;
+    }
+    .mobile-nav-item:hover, .mobile-nav-item.active {
+      background: var(--card-bg-hover);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .mobile-auth-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .mobile-login-item {
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .mobile-signup-btn {
+      width: 100%;
+      padding: 0.85rem;
+      font-size: 1rem;
+      border-radius: 10px;
+    }
+
+    .mobile-user-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .mobile-user-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mobile-logout-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      background: rgba(255, 51, 102, 0.1);
+      border: 1px solid rgba(255, 51, 102, 0.25);
+      color: #ff3366;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.65rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .mobile-logout-btn:hover {
+      background: rgba(255, 51, 102, 0.2);
+    }
+
+    /* ─── ANIMATIONS ─────────────────────────────────────────── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes slideDownFade {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── RESPONSIVE BREAKPOINTS ─────────────────────────────── */
+    @media (max-width: 767px) {
+      .desktop-nav {
+        display: none !important;
+      }
+      .mobile-controls {
+        display: flex !important;
+      }
+      .navbar {
+        padding: 0.65rem 1rem;
+      }
+      .logo-text {
+        font-size: 1.2rem;
+      }
     }
   `]
 })
@@ -332,6 +628,7 @@ export class HeaderComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
 
   isDark = signal(true);
+  isMobileMenuOpen = signal(false);
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -359,7 +656,16 @@ export class HeaderComponent implements OnInit {
     }
   }
 
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update(v => !v);
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+  }
+
   logout(): void {
+    this.closeMobileMenu();
     this.authService.logout();
     window.location.href = '/';
   }
