@@ -141,7 +141,7 @@ declare const L: any;
         <div [style.display]="viewMode() === 'list' ? 'grid' : 'none'" class="listings-grid">
           @for (item of listings(); track item.id) {
             <div class="listing-card">
-              <div class="card-image-placeholder" [style.background-image]="item.media && item.media.length > 0 ? 'linear-gradient(180deg, rgba(18, 18, 24, 0.1) 0%, rgba(18, 18, 24, 0.8) 100%), url(' + item.media[0].url + ')' : ''">
+              <div class="card-image-placeholder" [style.background-image]="item.media && item.media.length > 0 ? 'linear-gradient(180deg, rgba(18, 18, 24, 0.1) 0%, rgba(18, 18, 24, 0.8) 100%), url(' + (item.media[0].thumbnailUrl || item.media[0].url) + ')' : ''">
                 <span class="category-label">{{ item.category | uppercase }}</span>
                 <span class="rent-label">₹{{ item.rentAmount }}</span>
                 @if (authService.isAuthenticated() && authService.userRole() === 'visitor') {

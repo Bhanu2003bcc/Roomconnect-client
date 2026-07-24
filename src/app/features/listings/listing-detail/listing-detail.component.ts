@@ -20,7 +20,7 @@ import { AuthService } from '../../../core/auth/auth.service';
           <div class="content-left">
             <div class="gallery">
               <!-- Render listing media if available, fallback to mock gradient -->
-              <div class="cover-image" [style.background-image]="item.media && item.media.length > 0 ? 'linear-gradient(180deg, rgba(18, 18, 24, 0.2) 0%, rgba(18, 18, 24, 0.95) 100%), url(' + item.media[0].url + ')' : ''">
+              <div class="cover-image" [style.background-image]="item.media && item.media.length > 0 ? 'linear-gradient(180deg, rgba(18, 18, 24, 0.2) 0%, rgba(18, 18, 24, 0.95) 100%), url(' + (item.media[0].url || item.media[0].thumbnailUrl) + ')' : ''">
                 <span class="category-badge">{{ item.category | uppercase }}</span>
                 <span class="status-badge" [ngClass]="item.status">
                   {{ item.status === 'available_from' ? 'Available From ' + item.availableFromDate : (item.status | uppercase) }}

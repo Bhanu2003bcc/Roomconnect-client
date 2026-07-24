@@ -250,7 +250,7 @@ import { AlertsService } from '../../core/services/alerts.service';
                       <h5>Media Gallery ({{ p.media?.length || 0 }})</h5>
                       <div class="gallery-thumbs">
                         @for (m of p.media; track m.id) {
-                          <div class="thumb-wrapper" [style.background-image]="'url(' + m.thumbnailUrl + ')'">
+                          <div class="thumb-wrapper" [style.background-image]="'url(' + (m.thumbnailUrl || m.url) + ')'">
                             <button (click)="deleteImage(p.id!, m.id)" class="del-thumb-btn">×</button>
                           </div>
                         }
