@@ -13,8 +13,8 @@ import { environment } from '../../../../environments/environment';
     <div class="auth-page">
       <div class="glass-card">
         <div class="header">
-          <span class="emoji">⚡</span>
-          <h2>Welcome back to RoomConnect</h2>
+          <span class="emoji"></span>
+          <h2>Welcome back to Room2Rent</h2>
           <p>Verify your phone number with a 6-digit OTP to get started.</p>
         </div>
 

@@ -12,8 +12,8 @@ import { AuthService } from '../../../core/auth/auth.service';
     <div class="auth-page">
       <div class="glass-card">
         <div class="header">
-          <span class="emoji">✨</span>
-          <h2>Join RoomConnect Noida</h2>
+          <span class="emoji"></span>
+          <h2>Join Room2Rent Noida</h2>
           <p>Find room rentals and connect directly. No brokers, no hidden fees.</p>
         </div>
 
@@ -71,7 +71,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                   [(ngModel)]="role"
                   class="hidden-radio"
                 />
-                <span class="icon">🔍</span>
+                <span class="icon"></span>
                 <span class="title">Visitor</span>
                 <span class="desc">Browse, book visits & connect</span>
               </label>
@@ -84,7 +84,7 @@ import { AuthService } from '../../../core/auth/auth.service';
                   [(ngModel)]="role"
                   class="hidden-radio"
                 />
-                <span class="icon">🔑</span>
+                <span class="icon"></span>
                 <span class="title">Owner</span>
                 <span class="desc">List rooms & manage bookings</span>
               </label>
