@@ -23,7 +23,10 @@ declare const L: any;
         </div>
 
         <div class="filter-section">
-          <label for="radius">Radius ({{ getCentreLabel() }})</label>
+          <div class="radius-header">
+            <label for="radius">Radius ({{ getCentreLabel() }})</label>
+            <button (click)="getUserLocation()" class="loc-btn" title="Use current location">📍 Use My Location</button>
+          </div>
           <select id="radius" [(ngModel)]="filters.radiusKm" (change)="onFilterChange()" class="select-field">
             <option [value]="2">Within 2 Km</option>
             <option [value]="5">Within 5 Km</option>
@@ -245,6 +248,24 @@ declare const L: any;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+    }
+    .radius-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .loc-btn {
+      background: transparent;
+      border: none;
+      color: var(--accent-cyan);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0;
+      transition: color 0.2s ease;
+    }
+    .loc-btn:hover {
+      text-decoration: underline;
     }
     .filter-section label {
       color: var(--text-secondary);
@@ -968,6 +989,9 @@ export class ListingSearchComponent implements OnInit, AfterViewInit {
   }
 
   onFilterChange(): void {
+    if (this.filters.radiusKm) {
+      this.filters.radiusKm = +this.filters.radiusKm;
+    }
     this.searchService.search(this.filters).subscribe({
       next: (res) => {
         this.listings.set(res.items || []);

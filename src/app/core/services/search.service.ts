@@ -32,6 +32,9 @@ export class SearchService {
     Object.keys(filters).forEach(key => {
       const val = (filters as any)[key];
       if (val !== undefined && val !== null && val !== '') {
+        if (key === 'genderPreference' && val === 'any') {
+          return;
+        }
         params[key] = val.toString();
       }
     });
