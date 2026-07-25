@@ -7,6 +7,8 @@ import {
   ViewChild,
   inject,
   signal,
+  NgZone,
+  ChangeDetectorRef,
   PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -1158,6 +1160,8 @@ import { StatsService } from '../../core/services/stats.service';
 export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private statsService = inject(StatsService);
+  private ngZone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('statsSection') statsSection!: ElementRef;
 
@@ -1166,34 +1170,34 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private observer?: IntersectionObserver;
 
   stats = [
-    { label: 'Rooms Listed',      target: 500,  display: '500+' },
-    { label: 'Verified Owners',   target: 200,  display: '200+' },
-    { label: 'Happy Tenants',     target: 1200, display: '1200+' },
-    { label: 'Avg. Days to Move', target: 3,    display: '3 days' },
+    { label: 'Rooms Listed', target: 0, display: '—' },
+    { label: 'Verified Owners', target: 0, display: '—' },
+    { label: 'Happy Tenants', target: 0, display: '—' },
+    { label: 'Avg. Days to Move', target: 0, display: '—' },
   ];
 
   steps = [
-    { icon: '1', title: 'Search & Filter',    desc: 'Use smart filters — radius, budget, category, amenities — to find your ideal room in seconds.' },
-    { icon: '2', title: 'Connect Directly',   desc: 'Message or call verified owners directly. No middlemen, no brokerage, no hidden fees.' },
-    { icon: '3', title: 'Move In Happy',       desc: 'Visit the property, finalise the deal, and move in with full confidence in your new home.' },
+    { icon: '1', title: 'Search & Filter', desc: 'Use smart filters — radius, budget, category, amenities — to find your ideal room in seconds.' },
+    { icon: '2', title: 'Connect Directly', desc: 'Message or call verified owners directly. No middlemen, no brokerage, no hidden fees.' },
+    { icon: '3', title: 'Move In Happy', desc: 'Visit the property, finalise the deal, and move in with full confidence in your new home.' },
   ];
 
   categories = [
-    { icon: 'PG', name: 'PG',               count: '120+', gradient: 'linear-gradient(135deg, #00f2fe, #4facfe)' },
-    { icon: '1B', name: '1 BHK',            count: '95+',  gradient: 'linear-gradient(135deg, #a855f7, #6366f1)' },
-    { icon: '2B', name: '2 BHK',            count: '80+',  gradient: 'linear-gradient(135deg, #f97316, #fb923c)' },
-    { icon: '3B', name: '3 BHK',            count: '45+',  gradient: 'linear-gradient(135deg, #22c55e, #16a34a)' },
-    { icon: 'SR', name: 'Single Room',      count: '110+', gradient: 'linear-gradient(135deg, #ec4899, #f43f5e)' },
-    { icon: 'IF', name: 'Independent Floor', count: '50+',  gradient: 'linear-gradient(135deg, #ffb800, #f59e0b)' },
+    { icon: 'PG', name: 'PG', count: '120+', gradient: 'linear-gradient(135deg, #00f2fe, #4facfe)' },
+    { icon: '1B', name: '1 BHK', count: '95+', gradient: 'linear-gradient(135deg, #a855f7, #6366f1)' },
+    { icon: '2B', name: '2 BHK', count: '80+', gradient: 'linear-gradient(135deg, #f97316, #fb923c)' },
+    { icon: '3B', name: '3 BHK', count: '45+', gradient: 'linear-gradient(135deg, #22c55e, #16a34a)' },
+    { icon: 'SR', name: 'Single Room', count: '110+', gradient: 'linear-gradient(135deg, #ec4899, #f43f5e)' },
+    { icon: 'IF', name: 'Independent Floor', count: '50+', gradient: 'linear-gradient(135deg, #ffb800, #f59e0b)' },
   ];
 
   features = [
-    { icon: '✓', iconBg: 'rgba(0,242,254,0.12)',   title: 'Zero Brokerage Guarantee',    desc: 'Connect with owners directly. Every single listing on Rent2Live is broker-free.' },
-    { icon: '✓', iconBg: 'rgba(168,85,247,0.12)',  title: 'DPDP-Compliant & Secure',     desc: 'Your personal data is protected under the Digital Personal Data Protection Act.' },
-    { icon: '✓', iconBg: 'rgba(249,115,22,0.12)',  title: 'Photo-Verified Listings',     desc: 'All listings must include real photos. No fake or misleading listings — ever.' },
-    { icon: '✓', iconBg: 'rgba(34,197,94,0.12)',   title: 'In-App Owner Chat',           desc: 'Chat securely with property owners without sharing your number until you\'re ready.' },
-    { icon: '✓', iconBg: 'rgba(255,184,0,0.12)',   title: 'Smart Search Alerts',         desc: 'Save your search and get notified the moment a matching room becomes available.' },
-    { icon: '✓', iconBg: 'rgba(236,72,153,0.12)',  title: 'Hyper-Local Map View',        desc: 'See listings plotted on a Noida map. Filter by distance from your workplace or college.' },
+    { icon: '✓', iconBg: 'rgba(0,242,254,0.12)', title: 'Zero Brokerage Guarantee', desc: 'Connect with owners directly. Every single listing on Rent2Live is broker-free.' },
+    { icon: '✓', iconBg: 'rgba(168,85,247,0.12)', title: 'DPDP-Compliant & Secure', desc: 'Your personal data is protected under the Digital Personal Data Protection Act.' },
+    { icon: '✓', iconBg: 'rgba(249,115,22,0.12)', title: 'Photo-Verified Listings', desc: 'All listings must include real photos. No fake or misleading listings — ever.' },
+    { icon: '✓', iconBg: 'rgba(34,197,94,0.12)', title: 'In-App Owner Chat', desc: 'Chat securely with property owners without sharing your number until you\'re ready.' },
+    { icon: '✓', iconBg: 'rgba(255,184,0,0.12)', title: 'Smart Search Alerts', desc: 'Save your search and get notified the moment a matching room becomes available.' },
+    { icon: '✓', iconBg: 'rgba(236,72,153,0.12)', title: 'Hyper-Local Map View', desc: 'See listings plotted on a Noida map. Filter by distance from your workplace or college.' },
   ];
 
   testimonials = [
@@ -1224,6 +1228,7 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   private realTimeTimer: any = null;
+  private statsLoaded = false; // true once API has delivered real targets
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -1235,23 +1240,21 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   loadLiveStats(): void {
     this.statsService.getStats().subscribe({
       next: (res) => {
-        this.stats[0].target = res.roomsListed > 0 ? res.roomsListed : 500;
-        this.stats[1].target = res.verifiedOwners > 0 ? res.verifiedOwners : 200;
-        this.stats[2].target = res.happyTenants > 0 ? res.happyTenants : 1200;
-        this.stats[3].target = res.avgDaysToMove > 0 ? res.avgDaysToMove : 3;
+        this.stats[0].target = res.roomsListed;
+        this.stats[1].target = res.verifiedOwners;
+        this.stats[2].target = res.happyTenants;
+        this.stats[3].target = res.avgDaysToMove;
+        this.statsLoaded = true;
         if (this.statsAnimated) {
-          this.updateDisplayedStats();
+          this.animateStats();
         }
       },
       error: (err) => {
         console.error('Failed to load real-time platform stats', err);
-        this.stats[0].target = 500;
-        this.stats[1].target = 200;
-        this.stats[2].target = 1200;
-        this.stats[3].target = 3;
       }
     });
   }
+
 
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -1268,11 +1271,11 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   generateParticles(): void {
     this.particles = Array.from({ length: 28 }, () => ({
-      x:     Math.random() * 100,
-      y:     Math.random() * 100,
-      size:  Math.random() * 2.5 + 1,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 2.5 + 1,
       delay: Math.random() * 5,
-      dur:   Math.random() * 4 + 3,
+      dur: Math.random() * 4 + 3,
     }));
   }
 
@@ -1281,7 +1284,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       entries.forEach(entry => {
         if (entry.isIntersecting && !this.statsAnimated) {
           this.statsAnimated = true;
-          this.animateStats();
+          if (this.statsLoaded) {
+            this.animateStats();
+          }
         }
       });
     }, { threshold: 0.05 });
@@ -1293,40 +1298,47 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   animateStats(): void {
     const duration = 1800;
-    const steps    = 60;
+    const steps = 60;
     const interval = duration / steps;
     let completedCount = 0;
+    let animatingCount = 0;
 
     this.stats.forEach((stat, i) => {
+      const target = stat.target;
+      if (target === 0) {
+        return;
+      }
+      animatingCount++;
       let current = 0;
-      const target = stat.target > 0 ? stat.target : (i === 0 ? 500 : i === 1 ? 200 : i === 2 ? 1200 : 3);
       const increment = target / steps;
-      const timer = setInterval(() => {
-        current = Math.min(current + increment, target);
-        const val = Math.round(current);
-        this.stats[i] = {
-          ...stat,
-          target,
-          display: i < 3 ? val + '+' : val + ' days',
-        };
-        this.stats = [...this.stats];
+      // Run timer outside Angular zone for perf, but re-enter zone for each DOM update
+      this.ngZone.runOutsideAngular(() => {
+        const timer = setInterval(() => {
+          current = Math.min(current + increment, target);
+          const val = Math.round(current);
+          // Re-enter zone for each mutation so Angular CD picks it up
+          this.ngZone.run(() => {
+            this.stats[i] = {
+              ...this.stats[i],
+              target,
+              display: i < 3 ? val + '+' : val + ' days',
+            };
+            this.stats = [...this.stats];
+            this.cdr.markForCheck();
+          });
 
-        if (current >= target) {
-          clearInterval(timer);
-          completedCount++;
-          if (completedCount === this.stats.length) {
-            this.startRealTimeStatsUpdates();
+          if (current >= target) {
+            clearInterval(timer);
+            this.ngZone.run(() => {
+              completedCount++;
+              if (animatingCount > 0 && completedCount === animatingCount) {
+                this.startRealTimeStatsUpdates();
+              }
+            });
           }
-        }
-      }, interval);
+        }, interval);
+      });
     });
-  }
-
-  updateDisplayedStats(): void {
-    this.stats = this.stats.map((stat, i) => ({
-      ...stat,
-      display: i < 3 ? stat.target + '+' : stat.target + ' days'
-    }));
   }
 
   startRealTimeStatsUpdates(): void {
