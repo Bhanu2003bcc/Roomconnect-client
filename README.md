@@ -1,10 +1,10 @@
 # RoomConnect Web Frontend
 
-RoomConnect is a modern, premium room rental and roommate matching platform. The frontend web application1fffe is built on the state-of-the-art **Angular 22** framework, utilizing modern TypeScript 6.x, Vitest for testing, and a highly responsive design tailored for tenants and landlords.
+RoomConnect is a modern, premium room rental and roommate matching platform. The frontend web application is built on the state-of-the-art **Angular 22** framework, utilizing modern TypeScript 6.x, Vitest for testing, and a highly responsive design tailored for tenants and landlords.
 
 ---
 
-## 🏗️ System Design & Architecture
+## System Design & Architecture
 
 The application is structured as a Single Page Application (SPA) leveraging modular architecture. It segregates logic into specialized feature modules, unified core services, and a direct S3/MinIO upload pipeline to ensure high performance and loose coupling.
 
@@ -89,7 +89,7 @@ The codebase follows a strictly modular folder structure to enforce clean bounda
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Technology | Purpose | Notes |
 | :--- | :--- | :--- |
